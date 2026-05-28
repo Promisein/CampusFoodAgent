@@ -42,13 +42,15 @@ def _score_shop(shop: dict, slots: ParsedSlots, weights: dict, time_slots: dict,
     # 基础分
     total += weights.get("base_score", 0.15)
 
-    # 1. 预算匹配
+    # 1. 预算匹配：预算内统一给满分，越便宜附加分越高
     if slots.budget_max is not None and shop.get("avg_price"):
         price = shop["avg_price"]
         if price <= slots.budget_max:
-            budget_score = max(0, 1.0 - (slots.budget_max - price) / slots.budget_max)
-            total += budget_score * weights["budget"]
+            total += weights["budget"]
             matched.append("budget")
+            # 越便宜附加分越高
+            price_bonus = max(0, 1.0 - price / slots.budget_max) * weights.get("budget_bonus", 0.03)
+            total += price_bonus
 
     # 2. 校区匹配
     if slots.location:
@@ -79,10 +81,6 @@ def _score_shop(shop: dict, slots: ParsedSlots, weights: dict, time_slots: dict,
             total += weights["time"]
             matched.append("time")
 
-    # 预算内附加分
-    if "budget" in matched and shop["avg_price"] <= slots.budget_max:
-        total += weights.get("budget_bonus", 0.03)
-
     return min(total, 0.99), matched
 
 
@@ -112,6 +110,9 @@ def _is_open_during(open_hours: str, slot_name: str, time_slots: dict) -> bool:
         ch, cm = map(int, open_end.strip().split(":"))
         shop_open_min = oh * 60 + om
         shop_close_min = ch * 60 + cm
+        # 跨午夜修正：打烊时间 < 开门时间说明营业到次日（如 10:00-02:00）
+        if shop_close_min < shop_open_min:
+            shop_close_min += 24 * 60
         slot_open_min = slot_start_h * 60 + slot_start_m
         slot_close_min = slot_end_h * 60 + slot_end_m
         # 有重叠

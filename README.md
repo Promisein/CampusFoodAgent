@@ -211,7 +211,7 @@ backend/
 
 ```
 总分 = 基础分(0.15)
-     + 预算匹配 × 0.22    （越接近预算上限分越高，梯度打分）
+     + 预算匹配 × 0.22    （预算内统一满分，越便宜附加分越高）
      + 校区匹配 × 0.18    （校区名出现在 campus/area 字段）
      + 口味匹配 × 0.18    （tastes JSON 数组中匹配）
      + 场景匹配 × 0.22    （scenes JSON 数组中匹配，支持别名展开）
@@ -288,3 +288,51 @@ Parsed: budget=30.0, location=清水河, taste=麻辣, time=夜宵
 - [x] 改 `scoring_config.yaml` 的权重后，推荐结果会发生变化
 - [x] `top_k=3` 返回不超过 3 家店
 - [x] 空 query 返回默认排序的全部店铺
+
+---
+
+## Chapter 3 代码审查 + 修复
+
+以下四个问题在代码审查中被发现并已修复：
+
+### #1 场景识别疏漏 — parser.py 与 scoring_config.yaml 不同步
+
+**问题**：`scoring_config.yaml` 中 `scene_aliases` 已包含 "赶时间"、"健身餐"、"宿舍聚餐" 等别名，但 `parser.py` 的 `_SCENES` 列表是独立硬编码的，未同步更新。导致 "早餐 10 元以内 赶时间" 这类语句的场景槽位为空。
+
+**修复**：`parser.py` 的 `parse_query()` 改为动态调用 `load_scoring_config()` 获取 `scene_aliases`，再通过 `_build_scene_rules()` 转为规则列表。现在只需维护 YAML 配置一个来源，代码自动同步。
+
+### #2 预算评分逻辑反直觉
+
+**问题**：原公式 `budget_score = max(0, 1.0 - (budget_max - price) / budget_max)` 导致价格越接近预算上限得分越高。预算 25 元时，25 元的店铺得分 > 12 元的店铺，这与用户"预算内越便宜越好"的直觉相悖。
+
+**修复**：改为预算内所有店铺统一获得满分权重（0.22），再按便宜程度附加梯度奖励：`price_bonus = (1 - price/budget_max) * budget_bonus`。越便宜附加分越高，自然排在前面。
+
+### #3 跨天营业时间判断缺陷
+
+**问题**：龙湖火锅营业时间 `10:00-02:00`（次日凌晨），但 `_is_open_during()` 将关门时间 `02:00` 直接转为 120 分钟，小于开门时间 600 分钟，导致与夜宵时段（21:00-26:00 = 1260-1560 分钟）的时间重叠判断 `shop_close_min(120) >= slot_open_min(1260)` 为 False。
+
+**修复**：增加跨午夜修正逻辑——`shop_close_min < shop_open_min` 时关门时间自动加 1440 分钟（24 小时），正确表示跨日营业。
+
+### #4 测试覆盖（57 个用例）
+
+```
+backend/tests/
+├── __init__.py
+├── test_parser.py      # 36 个测试
+│   ├── TestParseBudget (8)
+│   ├── TestParseLocation (5)
+│   ├── TestParseTaste (6)
+│   ├── TestParseScene (8)   ← 含 赶时间/健身餐/宿舍聚餐 回归测试
+│   ├── TestParseTime (6)
+│   └── TestParseEdgeCases (3)
+└── test_recommender.py # 21 个测试
+    ├── TestRecommendClearLightFood (2)
+    ├── TestRecommendSpicyParty (2)
+    ├── TestOvernightOpenHours (4)    ← 含跨午夜营业回归测试
+    ├── TestRecommendTopK (3)
+    ├── TestRecommendEmptyQuery (1)
+    ├── TestRecommendScoreRange (2)
+    ├── TestRecommendReason (2)
+    ├── TestRecommendResultStructure (1)
+    └── TestBudgetScoring (4)         ← 含预算评分回归测试
+```

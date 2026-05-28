@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+from app.core.scoring_config import load_scoring_config
+
 
 @dataclass
 class ParsedSlots:
@@ -15,12 +17,6 @@ class ParsedSlots:
 _LOCATIONS = [
     ("清水河", ["清水河", "清水", "清溪"]),
     ("沙河", ["沙河"]),
-]
-
-_SCENES = [
-    ("一个人", ["一个人", "单人", "自己", "随便", "简单"]),
-    ("同学聚餐", ["聚餐", "约饭", "聚会", "室友", "同学", "朋友", "宿舍"]),
-    ("约会", ["约会", "情侣", "两个人", "对象"]),
 ]
 
 _TASTES = [
@@ -46,6 +42,11 @@ def _match_any(text: str, rule_list: list[tuple[str, list[str]]]) -> str | None:
     return None
 
 
+def _build_scene_rules(scene_aliases: dict) -> list[tuple[str, list[str]]]:
+    """将配置文件中的场景别名转换为解析器用的规则列表"""
+    return [(name, aliases) for name, aliases in scene_aliases.items()]
+
+
 def parse_query(query: str) -> ParsedSlots:
     # 1. 预算提取（正则）
     budget = None
@@ -56,9 +57,13 @@ def parse_query(query: str) -> ParsedSlots:
         except ValueError:
             pass
 
-    # 2. 文本匹配提取
+    # 2. 场景规则从配置文件加载（配置与代码统一维护）
+    config = load_scoring_config()
+    scene_rules = _build_scene_rules(config["scene_aliases"])
+
+    # 3. 文本匹配提取
     location = _match_any(query, _LOCATIONS)
-    scene = _match_any(query, _SCENES)
+    scene = _match_any(query, scene_rules)
     taste = _match_any(query, _TASTES)
     time = _match_any(query, _TIMES)
 
