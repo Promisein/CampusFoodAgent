@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-**CampusFoodAgent** (成电吃什么 Agent) is an intelligent campus food recommendation system for UESTC (电子科技大学). It combines a rule-based scoring engine with AI (讯飞 Spark LLM) hybrid recommendations, served via FastAPI with a Next.js web frontend and WeChat Mini Program.
+**CampusFoodAgent** (成电吃什么 Agent) is an intelligent campus food recommendation system for UESTC (电子科技大学). It combines a rule-based scoring engine with AI (DeepSeek V4) hybrid recommendations, served via FastAPI with a Next.js web frontend and WeChat Mini Program.
 
 The project is currently in early planning/prototyping stage. The `复现计划/` directory contains a 10-chapter implementation guide that walks through building the system from scratch. Each chapter targets a runnable milestone.
 
@@ -14,7 +14,7 @@ The project is currently in early planning/prototyping stage. The `复现计划/
 |-------|-----------|
 | Backend framework | FastAPI (Python 3.11) |
 | Database | SQLite (single-file, WAL mode, no ORM) |
-| AI provider | 讯飞星辰 Workflow API + Spark X LLM |
+| AI provider | DeepSeek API (deepseek-v4) |
 | Web frontend | Next.js 15 (App Router, `"use client"`) |
 | Mini Program | 原生 WeChat Mini Program |
 | Deployment | Render (backend) + Vercel (frontend) |
@@ -41,8 +41,8 @@ CampusFoodAgent/
 │   │       ├── shop_repository.py   # SQLite DB layer (DDL, seed, queries)
 │   │       ├── parser.py            # Natural language → structured slots
 │   │       ├── recommender.py       # Rule-based weighted scoring engine
-│   │       ├── xfyun_workflow_service.py    # 讯飞 workflow API client
-│   │       ├── spark_local_recommend_service.py  # Hybrid: rules + LLM rerank
+│   │       ├── deepseek_service.py         # DeepSeek API client
+│   │       ├── deepseek_rerank_service.py   # Hybrid: rules + DeepSeek V4 rerank
 │   │       ├── auth_token_service.py   # Hand-rolled JWT (HS256)
 │   │       ├── wechat_auth_service.py  # WeChat jscode2session → JWT
 │   │       ├── user_profile.py         # Behavioral user profile builder
@@ -75,9 +75,9 @@ There are three recommendation modes, selectable via `RECOMMEND_PROVIDER` env va
 
 1. **Rule-based** (default/fallback): User input → `parser.py` extracts structured slots (budget, location, taste, scene, time) → `recommender.py` scores all shops against slots using configurable weights from `scoring_config.yaml` → returns top K ranked results.
 
-2. **Workflow** (`RECOMMEND_PROVIDER=workflow`): Sends query to 讯飞星辰 Workflow API, injecting user profile summary and category intent keywords via `AGENT_*` parameters. The workflow runs a pre-built LLM pipeline on 讯飞's platform.
+2. **DeepSeek API** (`RECOMMEND_PROVIDER=deepseek_api`): Sends query to DeepSeek API, injecting user profile summary and category intent keywords into the system prompt. DeepSeek V4 generates recommendations directly.
 
-3. **Spark Local** (`RECOMMEND_PROVIDER=spark_local`): Rule engine retrieves top 30 candidates → constructs a prompt with candidate list → Spark X LLM reranks → **whitelist sanitization** filters out hallucinated store names → returns top results. Falls back to rule-based if LLM output is unusable.
+3. **DeepSeek Rerank** (`RECOMMEND_PROVIDER=deepseek_rerank`): Rule engine retrieves top 30 candidates → constructs a prompt with candidate list → DeepSeek V4 reranks → **whitelist sanitization** filters out hallucinated store names → returns top results. Falls back to rule-based if LLM output is unusable.
 
 ## Key design decisions
 
@@ -118,7 +118,7 @@ python -m pytest tests/test_recommend.py -v   # Single test file
 
 ## Critical anti-hallucination mechanism
 
-The Spark Local mode's `_sanitize_or_fallback()` function is a security boundary. LLMs can hallucinate store names that don't exist in the database. This function:
+The DeepSeek Rerank mode's `_sanitize_or_fallback()` function is a security boundary. LLMs can hallucinate store names that don't exist in the database. This function:
 1. Builds a whitelist of valid store names from the rule engine's top 30 candidates
 2. Filters LLM output to only include whitelisted names
 3. Falls back to rule-based results if all LLM-recommended stores fail validation

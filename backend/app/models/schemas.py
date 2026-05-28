@@ -97,3 +97,25 @@ class HotRankingItem(BaseModel):
 class HotRankingResponse(BaseModel):
     items: list[HotRankingItem]
     generated_at: str
+
+
+# ===== DeepSeek AI 推荐 =====
+class DeepSeekRecommendRequest(BaseModel):
+    query: str = Field(..., min_length=1)
+    uid: Optional[str] = None
+    anonymousId: Optional[str] = None
+    userId: Optional[str] = None
+    chatId: Optional[str] = None
+    top_k: Optional[int] = Field(default=3, ge=1, le=10)
+    stream: bool = False
+    history: Optional[list[dict]] = None
+    parameters: Optional[dict] = None
+
+
+class DeepSeekRecommendResponse(BaseModel):
+    ok: bool
+    answer: str = ""
+    error: Optional[str] = None
+    code: int = 0
+    finishReason: str = ""
+    recommendations: list[dict] = []

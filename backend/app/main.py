@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.routes import router
+from app.api.proxy_routes import proxy_router
 
 # 自动加载 backend/.env
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env", override=False)
@@ -47,3 +48,4 @@ app.add_middleware(Utf8ResponseMiddleware)
 
 # ===== 挂载路由 =====
 app.include_router(router, prefix="/api/v1", tags=["mvp"])
+app.include_router(proxy_router, prefix="/api", tags=["deepseek-proxy"])

@@ -2,9 +2,9 @@
 
 ## 本章目标
 
-接入讯飞大模型，实现 AI 驱动的推荐路径。完成两种模式：
-1. **Workflow 模式**：调讯飞星辰工作流 API
-2. **Spark Local 模式**：本地规则引擎初排 + LLM 精排
+接入 DeepSeek V4，实现 AI 驱动的推荐路径。完成两种 AI 模式：
+1. **DeepSeek API 模式**：直接调用 DeepSeek API，由模型生成推荐回答
+2. **DeepSeek Rerank 模式**：本地规则引擎初排 + DeepSeek V4 精排
 
 ## 前置知识
 
@@ -16,19 +16,21 @@
 
 ```
 backend/
-├── .env                      # 新增讯飞 API 密钥
+├── .env                      # 新增 DeepSeek API 密钥
 ├── .env.example              # 新增密钥模板
 └── app/
     ├── models/
-    │   └── schemas.py        # 新增 Workflow 相关模型
+    │   └── schemas.py        # 新增 DeepSeek 相关模型
     ├── api/
     │   └── proxy_routes.py   # ★ 新版 /api 路由（AI 路径）
     └── services/
-        ├── xfyun_workflow_service.py   # ★ 讯飞 Workflow 客户端
-        ├── spark_local_recommend_service.py  # ★ Spark 本地混合方案
-        ├── query_intent_service.py      # 查询意图提取
-        └── user_profile.py              # 用户画像构建
+        ├── deepseek_service.py        # ★ DeepSeek API 客户端
+        ├── deepseek_rerank_service.py # ★ DeepSeek V4 本地混合推荐方案
+        ├── query_intent_service.py    # 查询意图提取
+        └── user_profile.py            # 用户画像构建
 ```
+
+> 本章文档只预留 `deepseek_service.py` 与 `deepseek_rerank_service.py` 的接口设计；真正代码实现按本章步骤创建。
 
 ---
 
@@ -37,12 +39,12 @@ backend/
 ```
 POST /api/recommend (proxy_routes.py)
          │
-         ├─ RECOMMEND_PROVIDER=workflow ──→ xfyun_workflow_service.py
-         │    查询 → AGENT_USER_INPUT → 讯飞 Workflow API → 返回结果
+         ├─ RECOMMEND_PROVIDER=deepseek_api ──→ deepseek_service.py
+         │    查询 + 用户画像 + 意图关键词 → DeepSeek API → 返回结果
          │
-         ├─ RECOMMEND_PROVIDER=spark_local ──→ spark_local_recommend_service.py
+         ├─ RECOMMEND_PROVIDER=deepseek_rerank ──→ deepseek_rerank_service.py
          │    ① 规则引擎初排 Top 30
-         │    ② 构造 Prompt 发给 Spark X LLM
+         │    ② 构造 Prompt 发给 DeepSeek V4
          │    ③ LLM 精排返回 JSON
          │    ④ 输出清洗（去幻觉）
          │
@@ -56,158 +58,112 @@ POST /api/recommend (proxy_routes.py)
 在 `.env` 和 `.env.example` 中新增：
 
 ```env
-# 推荐提供者选择：workflow | spark_local
-RECOMMEND_PROVIDER=workflow
+# 推荐提供者选择：deepseek_api | deepseek_rerank
+RECOMMEND_PROVIDER=deepseek_api
 
-# 讯飞星辰 Workflow API
-XFYUN_API_KEY=your_api_key_here
-XFYUN_API_SECRET=your_api_secret_here
-XFYUN_APP_ID=7b367536
-XFYUN_FLOW_ID=7436739079683477504
-XFYUN_BASE_URL=https://xingchen-api.xf-yun.com
-XFYUN_TIMEOUT_SECONDS=25
-XFYUN_MAX_RETRIES=1
-
-# 讯飞 Spark 直接 API
-XFYUN_SPARKX2_ENDPOINT=https://spark-api-open.xf-yun.com/x2/chat/completions
-XFYUN_SPARKX_API_PASSWORD=your_spark_password_here
-XFYUN_SPARKX_MODEL=spark-x
-XFYUN_SPARKX_TEMPERATURE=0.3
-XFYUN_SPARKX_MAX_TOKENS=1800
+# DeepSeek V4 API
+DEEPSEEK_API_KEY=your_deepseek_api_key_here
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-v4
+DEEPSEEK_TIMEOUT_SECONDS=25
+DEEPSEEK_MAX_RETRIES=1
+DEEPSEEK_TEMPERATURE=0.3
+DEEPSEEK_MAX_TOKENS=1800
 ```
 
 ---
 
-## Step 2：讯飞 Workflow 客户端
+## Step 2：DeepSeek API 客户端
 
-创建 `backend/app/services/xfyun_workflow_service.py`：
+创建 `backend/app/services/deepseek_service.py`：
 
 ```python
-import json
 import os
 import time
 import httpx
 
-XFYUN_BASE_URL = os.getenv("XFYUN_BASE_URL", "https://xingchen-api.xf-yun.com")
-WORKFLOW_URL = f"{XFYUN_BASE_URL}/workflow/v1/chat/completions"
-RESUME_URL = f"{XFYUN_BASE_URL}/workflow/v1/resume"
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+CHAT_URL = f"{DEEPSEEK_BASE_URL}/chat/completions"
 
 
 def _auth_header() -> dict:
-    key = os.getenv("XFYUN_API_KEY", "")
-    secret = os.getenv("XFYUN_API_SECRET", "")
-    return {"Authorization": f"Bearer {key}:{secret}"}
+    api_key = os.getenv("DEEPSEEK_API_KEY", "")
+    return {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
 
-def ask_workflow(
+def ask_deepseek(
     query: str,
     uid: str = "",
-    chat_id: str = "",
     history: list[dict] | None = None,
     parameters: dict | None = None,
     stream: bool = False,
 ) -> dict:
-    """调用讯飞星辰 Workflow API，返回标准化响应"""
-    merged_params = parameters or {}
-    merged_params["AGENT_USER_INPUT"] = query
+    """调用 DeepSeek API，返回标准化响应"""
+    system_prompt = "你是成电校园餐饮推荐助手，请结合用户需求、用户画像和候选信息给出清晰推荐。"
+    if parameters:
+        profile = parameters.get("AGENT_USER_PROFILE_SUMMARY", "")
+        keywords = parameters.get("AGENT_CATEGORY_KEYWORDS", "")
+        system_prompt += f"\n用户画像：{profile}\n意图关键词：{keywords}"
+
+    messages = [{"role": "system", "content": system_prompt}]
+    if history:
+        messages.extend(history)
+    messages.append({"role": "user", "content": query})
 
     payload = {
-        "flow_id": os.getenv("XFYUN_FLOW_ID", ""),
-        "uid": uid,
-        "parameters": merged_params,
+        "model": os.getenv("DEEPSEEK_MODEL", "deepseek-v4"),
+        "messages": messages,
+        "temperature": float(os.getenv("DEEPSEEK_TEMPERATURE", "0.3")),
+        "max_tokens": int(os.getenv("DEEPSEEK_MAX_TOKENS", "1800")),
         "stream": stream,
     }
-    if chat_id:
-        payload["chat_id"] = chat_id
-    if history:
-        payload["history"] = history
 
-    timeout = int(os.getenv("XFYUN_TIMEOUT_SECONDS", "25"))
-    max_retries = int(os.getenv("XFYUN_MAX_RETRIES", "1"))
+    timeout = int(os.getenv("DEEPSEEK_TIMEOUT_SECONDS", "25"))
+    max_retries = int(os.getenv("DEEPSEEK_MAX_RETRIES", "1"))
 
     last_error = None
     for attempt in range(max_retries + 1):
         try:
             with httpx.Client(timeout=timeout) as client:
-                resp = client.post(WORKFLOW_URL, headers=_auth_header(), json=payload)
+                resp = client.post(CHAT_URL, headers=_auth_header(), json=payload)
                 resp.raise_for_status()
                 data = resp.json()
-
-                # 提取响应内容
-                choices = data.get("choices", [])
-                if choices:
-                    delta = choices[0].get("delta", {})
-                    content = delta.get("content", "")
-                    finish_reason = choices[0].get("finish_reason", "")
-                else:
-                    content = ""
-                    finish_reason = ""
-
+                content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                finish_reason = data.get("choices", [{}])[0].get("finish_reason", "")
                 return {
                     "ok": True,
                     "answer": content,
                     "raw": data,
-                    "code": data.get("code", 0),
-                    "chat_id": chat_id,
+                    "code": 0,
                     "finish_reason": finish_reason,
                 }
         except httpx.HTTPError as e:
             last_error = str(e)
             if attempt < max_retries:
-                time.sleep(2 ** attempt)  # 指数退避
+                time.sleep(2 ** attempt)
         except Exception as e:
             last_error = str(e)
             break
 
     return {"ok": False, "answer": "", "raw": None, "error": last_error, "code": -1}
-
-
-def resume_workflow(
-    chat_id: str,
-    event_id: str,
-    event_type: str,
-    content: str,
-    uid: str = "",
-) -> dict:
-    """恢复被中断的 Workflow"""
-    payload = {
-        "flow_id": os.getenv("XFYUN_FLOW_ID", ""),
-        "chat_id": chat_id,
-        "uid": uid,
-        "resume": {
-            "event_id": event_id,
-            "event_type": event_type,
-            "content": content,
-        },
-    }
-
-    timeout = int(os.getenv("XFYUN_TIMEOUT_SECONDS", "25"))
-    try:
-        with httpx.Client(timeout=timeout) as client:
-            resp = client.post(RESUME_URL, headers=_auth_header(), json=payload)
-            resp.raise_for_status()
-            data = resp.json()
-            return {"ok": True, "answer": data.get("choices", [{}])[0].get("delta", {}).get("content", ""), "raw": data}
-    except Exception as e:
-        return {"ok": False, "answer": "", "raw": None, "error": str(e)}
 ```
 
 **关键设计点：**
 
-1. **`AGENT_USER_INPUT`** — 这是讯飞 Workflow 的固定参数名，用户输入必须通过这个字段传入（不是 `user_message` 也不是 `prompt`）
-2. **指数退避重试** — `time.sleep(2 ** attempt)`，第 1 次重试等 1s，第 2 次等 2s，第 3 次等 4s
-3. **中断/恢复** — Workflow 执行到 Q&A 节点时返回 `finish_reason: "interrupt"`，前端展示问题 → 用户回答 → 调 `resume_workflow` 继续
+1. **统一标准响应** — 对外始终返回 `ok / answer / error / code / finish_reason`，避免路由层绑定具体供应商格式
+2. **用户画像注入** — 将 `AGENT_USER_PROFILE_SUMMARY` 与 `AGENT_CATEGORY_KEYWORDS` 合并到系统提示词中
+3. **指数退避重试** — `time.sleep(2 ** attempt)`，第 1 次重试等 1s，第 2 次等 2s，第 3 次等 4s
 
 ---
 
-## Step 3：Spark Local 混合推荐（亮点模块）
+## Step 3：DeepSeek Rerank 混合推荐（亮点模块）
 
-创建 `backend/app/services/spark_local_recommend_service.py`。
+创建 `backend/app/services/deepseek_rerank_service.py`。
 
 这是面试最值得讲的模块。核心思路：
 
 ```
-全部店铺 ──规则引擎初排──→ Top 30 ──构造Prompt──→ Spark X LLM ──返回JSON──→ 白名单过滤 ──→ 最终Top N
+全部店铺 ──规则引擎初排──→ Top 30 ──构造Prompt──→ DeepSeek V4 ──返回JSON──→ 白名单过滤 ──→ 最终Top N
 ```
 
 ```python
@@ -219,7 +175,7 @@ from app.services.parser import parse_query
 from app.services.recommender import recommend as rule_recommend
 
 
-def ask_spark_local_recommend(query: str, uid: str = "", **kwargs) -> dict:
+def ask_deepseek_rerank(query: str, uid: str = "", **kwargs) -> dict:
     # Step 1：规则引擎初排 Top 30
     slots = parse_query(query)
     candidates = rule_recommend(slots, top_k=30)
@@ -237,8 +193,8 @@ def ask_spark_local_recommend(query: str, uid: str = "", **kwargs) -> dict:
 
     user_prompt = f"用户需求：{query}\n\n候选店铺列表：\n{candidate_text}"
 
-    # Step 3：调 Spark API
-    raw_output = _call_spark_api(system_prompt, user_prompt)
+    # Step 3：调 DeepSeek V4 API
+    raw_output = _call_deepseek_api(system_prompt, user_prompt)
 
     # Step 4：输出清洗
     return _sanitize_or_fallback(raw_output, candidates)
@@ -256,13 +212,13 @@ def _build_candidate_text(candidates: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def _call_spark_api(system_prompt: str, user_prompt: str) -> str:
-    """调 Spark X API（非流式）"""
-    endpoint = os.getenv("XFYUN_SPARKX2_ENDPOINT", "")
-    password = os.getenv("XFYUN_SPARKX_API_PASSWORD", "")
-    model = os.getenv("XFYUN_SPARKX_MODEL", "spark-x")
-    temperature = float(os.getenv("XFYUN_SPARKX_TEMPERATURE", "0.3"))
-    max_tokens = int(os.getenv("XFYUN_SPARKX_MAX_TOKENS", "1800"))
+def _call_deepseek_api(system_prompt: str, user_prompt: str) -> str:
+    """调 DeepSeek V4 API（非流式）"""
+    endpoint = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/") + "/chat/completions"
+    api_key = os.getenv("DEEPSEEK_API_KEY", "")
+    model = os.getenv("DEEPSEEK_MODEL", "deepseek-v4")
+    temperature = float(os.getenv("DEEPSEEK_TEMPERATURE", "0.3"))
+    max_tokens = int(os.getenv("DEEPSEEK_MAX_TOKENS", "1800"))
 
     payload = {
         "model": model,
@@ -278,7 +234,7 @@ def _call_spark_api(system_prompt: str, user_prompt: str) -> str:
     with httpx.Client(timeout=30) as client:
         resp = client.post(
             endpoint,
-            headers={"Authorization": f"Bearer {password}", "Content-Type": "application/json"},
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             json=payload,
         )
         resp.raise_for_status()
@@ -318,7 +274,7 @@ def _sanitize_or_fallback(raw_output: str, candidates: list[dict]) -> dict:
         "ok": True,
         "answer": raw_output,
         "recommendations": clean[:3],
-        "engine": "spark_local",
+        "engine": "deepseek_rerank",
     }
 
 
@@ -448,7 +404,7 @@ def _build_summary(preferred: list, total_queries: int, total_feedbacks: int) ->
 ```
 
 **用户画像怎么被用到的？**
-注入到 `parameters.AGENT_USER_PROFILE_SUMMARY` 字段，随 Workflow 请求一起发给讯飞。Workflow 内部的 LLM 在生成推荐时会参考这段用户偏好摘要。
+注入到 DeepSeek API 的系统提示词中，与用户输入、分类意图关键词一起发送给 DeepSeek V4。模型在生成推荐或重排序时会参考这段用户偏好摘要。
 
 ---
 
@@ -461,31 +417,31 @@ import os
 from fastapi import APIRouter
 
 from app.models.schemas import (
-    WorkflowRecommendRequest,
-    WorkflowRecommendResponse,
+    DeepSeekRecommendRequest,
+    DeepSeekRecommendResponse,
 )
 from app.services.parser import parse_query
 from app.services.recommender import recommend as rule_recommend
 from app.services.query_intent_service import build_query_with_intent_hint, extract_query_intents
 from app.services.user_profile import build_iterative_profile
-from app.services.xfyun_workflow_service import ask_workflow
-from app.services.spark_local_recommend_service import ask_spark_local_recommend
+from app.services.deepseek_service import ask_deepseek
+from app.services.deepseek_rerank_service import ask_deepseek_rerank
 
 proxy_router = APIRouter()
 
 
 @proxy_router.post("/recommend")
-def post_recommend(req: WorkflowRecommendRequest):
-    provider = os.getenv("RECOMMEND_PROVIDER", "workflow").strip().lower()
+def post_recommend(req: DeepSeekRecommendRequest):
+    provider = os.getenv("RECOMMEND_PROVIDER", "deepseek_api").strip().lower()
 
-    # 构建用户画像（两种模式共用）
+    # 构建用户画像（两种 AI 模式共用）
     profile = build_iterative_profile(uid=req.uid, user_id=req.userId)
 
-    if provider == "workflow":
-        # ===== AI Workflow 模式 =====
+    if provider == "deepseek_api":
+        # ===== DeepSeek API 模式 =====
         enhanced_query = build_query_with_intent_hint(req.query)
 
-        # 注入 AGENT_* 参数
+        # 注入 AGENT_* 参数，保持后续 Prompt 与 Agent 编排扩展的一致性
         params = {
             "AGENT_USER_PROFILE_SUMMARY": profile.get("summary", ""),
             "AGENT_CATEGORY_KEYWORDS": ",".join(extract_query_intents(req.query)),
@@ -494,14 +450,14 @@ def post_recommend(req: WorkflowRecommendRequest):
         if req.parameters:
             params.update(req.parameters)
 
-        result = ask_workflow(
+        result = ask_deepseek(
             query=enhanced_query,
             uid=req.uid or req.anonymousId or "",
-            chat_id=req.chatId or "",
             history=req.history,
             parameters=params,
+            stream=req.stream,
         )
-        return WorkflowRecommendResponse(
+        return DeepSeekRecommendResponse(
             ok=result["ok"],
             answer=result.get("answer", ""),
             finishReason=result.get("finish_reason", ""),
@@ -509,15 +465,15 @@ def post_recommend(req: WorkflowRecommendRequest):
             code=result.get("code", 0),
         )
 
-    elif provider in ("spark_local", "spark"):
-        # ===== Spark Local 模式 =====
-        result = ask_spark_local_recommend(
+    elif provider in ("deepseek_rerank", "rerank"):
+        # ===== DeepSeek Rerank 模式 =====
+        result = ask_deepseek_rerank(
             query=req.query,
             uid=req.uid or req.anonymousId or "",
             profile=profile,
             user_id=req.userId,
         )
-        return WorkflowRecommendResponse(
+        return DeepSeekRecommendResponse(
             ok=result["ok"],
             answer=result.get("answer", ""),
             recommendations=result.get("recommendations", []),
@@ -527,7 +483,7 @@ def post_recommend(req: WorkflowRecommendRequest):
         # ===== 规则引擎兜底 =====
         slots = parse_query(req.query)
         results = rule_recommend(slots, top_k=req.top_k or 3)
-        return WorkflowRecommendResponse(
+        return DeepSeekRecommendResponse(
             ok=True,
             answer="",
             recommendations=[
@@ -544,7 +500,7 @@ def post_recommend(req: WorkflowRecommendRequest):
 在 `backend/app/models/schemas.py` 中新增相关模型：
 
 ```python
-class WorkflowRecommendRequest(BaseModel):
+class DeepSeekRecommendRequest(BaseModel):
     query: str = Field(..., min_length=1)
     uid: Optional[str] = None
     anonymousId: Optional[str] = None
@@ -556,7 +512,7 @@ class WorkflowRecommendRequest(BaseModel):
     parameters: Optional[dict] = None
 
 
-class WorkflowRecommendResponse(BaseModel):
+class DeepSeekRecommendResponse(BaseModel):
     ok: bool
     answer: str = ""
     error: Optional[str] = None
@@ -568,7 +524,7 @@ class WorkflowRecommendResponse(BaseModel):
 在 `main.py` 中挂载 proxy_router：
 ```python
 from app.api.proxy_routes import proxy_router
-app.include_router(proxy_router, prefix="/api", tags=["workflow-proxy"])
+app.include_router(proxy_router, prefix="/api", tags=["deepseek-proxy"])
 ```
 
 ---
@@ -584,8 +540,14 @@ RECOMMEND_PROVIDER="" uvicorn app.main:app --port 8000
 
 如果配置了真的 API key：
 ```bash
-RECOMMEND_PROVIDER=workflow uvicorn app.main:app --port 8000
-# 应该返回 LLM 生成的推荐
+RECOMMEND_PROVIDER=deepseek_api uvicorn app.main:app --port 8000
+# 应该返回 DeepSeek V4 生成的推荐
+```
+
+DeepSeek V4 重排序模式：
+```bash
+RECOMMEND_PROVIDER=deepseek_rerank uvicorn app.main:app --port 8000
+# 应该返回规则引擎初排 + DeepSeek V4 精排后的推荐
 ```
 
 ---
@@ -594,14 +556,14 @@ RECOMMEND_PROVIDER=workflow uvicorn app.main:app --port 8000
 
 | 坑 | 原因 | 解决 |
 |---|---|---|
-| Workflow 返回空结果 | 已发布版本与编辑器草稿不同步 | 去讯飞控制台检查是否发布了最新版本 |
-| Workflow 返回 20900 错误 | API Key/Secret 不正确 | 检查环境变量，确认 `Bearer {KEY}:{SECRET}` 格式 |
-| Spark 返回的 JSON 解析不了 | LLM 输出掺杂了 Markdown、中文标点 | `_sanitize` 里做更鲁棒的清理 |
-| Spark 编造不存在的店名 | LLM 幻觉 | 白名单过滤是整个流程的最后防线，**不能删** |
+| DeepSeek API 返回空结果 | Prompt 约束不清、模型输出为空或 API 响应格式变化 | 打印 raw 响应，确认 `choices[0].message.content` 是否存在 |
+| DeepSeek API 鉴权失败 | API Key 不正确或环境变量未加载 | 检查 `DEEPSEEK_API_KEY`，确认 `Authorization: Bearer <key>` 格式 |
+| DeepSeek V4 返回的 JSON 解析不了 | LLM 输出掺杂了 Markdown、中文标点 | `_sanitize` 里做更鲁棒的清理 |
+| DeepSeek V4 编造不存在的店名 | LLM 幻觉 | 白名单过滤是整个流程的最后防线，**不能删** |
 
 ## 章末检查
 
-- [ ] 三种模式（workflow / spark_local / 规则兜底）都能正常返回
+- [ ] 三种模式（deepseek_api / deepseek_rerank / 规则兜底）都能正常返回
 - [ ] 切换 `RECOMMEND_PROVIDER` 确实切换了引擎
-- [ ] Spark 模式的输出清洗能过滤幻觉店名
+- [ ] DeepSeek Rerank 模式的输出清洗能过滤幻觉店名
 - [ ] 用户画像从历史数据中生成合理的摘要

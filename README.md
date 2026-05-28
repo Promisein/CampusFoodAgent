@@ -462,3 +462,212 @@ backend/tests/
 | `test_parser.py` | 36 | 查询解析 |
 | `test_recommender.py` | 21 | 推荐引擎 |
 | `test_api.py` | 16 | HTTP 接口 |
+
+---
+
+## Chapter 5 完成：AI 引擎 — DeepSeek V4
+
+**目标**：接入 DeepSeek V4 API，实现 AI 驱动的推荐路径。支持三种推荐模式：DeepSeek API 直调、DeepSeek Rerank（规则初排 + LLM 精排）、规则引擎兜底。
+
+### 新增文件
+
+```
+backend/
+├── .env                          # 新增 DeepSeek API 配置
+├── .env.example                  # 新增 DeepSeek 密钥模板
+└── app/
+    ├── models/
+    │   └── schemas.py            # 新增 DeepSeekRecommendRequest/Response
+    ├── api/
+    │   └── proxy_routes.py       # ★ /api/recommend（3 模式智能分发）
+    └── services/
+        ├── deepseek_service.py          # ★ DeepSeek V4 API 客户端
+        ├── deepseek_rerank_service.py   # ★ Rerank 混合推荐（规则初排 + LLM 精排）
+        ├── query_intent_service.py      # 查询意图分类关键词提取
+        ├── user_profile.py              # 用户画像构建（从行为数据计算偏好）
+        ├── usage_events.py              # 行为事件记录（占位，第 7 章实现）
+        └── feedback_repository.py       # 用户反馈存储（占位，第 7 章实现）
+```
+
+### 架构总览：三种推荐模式
+
+```
+POST /api/recommend  (proxy_routes.py)
+         │
+         ├─ RECOMMEND_PROVIDER=deepseek_api ──→ deepseek_service.py
+         │    query + 用户画像 + 意图关键词 → DeepSeek V4 API → 自然语言推荐
+         │
+         ├─ RECOMMEND_PROVIDER=deepseek_rerank ──→ deepseek_rerank_service.py
+         │    ① 规则引擎初排 Top 30
+         │    ② 构造 Prompt（候选店铺列表 + 用户需求）
+         │    ③ DeepSeek V4 精排返回 JSON
+         │    ④ 白名单过滤（防幻觉）→ 最终 Top 3
+         │
+         └─ 其他/未配置 ──→ 规则引擎兜底
+              parser → recommender → Top K 打分结果
+```
+
+### 各模块详解
+
+#### 1. deepseek_service.py — DeepSeek V4 API 客户端
+
+调用 `POST https://api.deepseek.com/chat/completions`，实现：
+
+- **统一标准响应**：始终返回 `{ok, answer, error, code, finish_reason}`，不绑定具体供应商格式
+- **用户画像注入**：将用户偏好摘要和意图关键词合并到 System Prompt 中，提升推荐相关性
+- **指数退避重试**：`time.sleep(2 ** attempt)`，第 1 次重试等 1s，第 2 次等 2s
+- **可配置超时**：`DEEPSEEK_TIMEOUT_SECONDS`（默认 25s），应对长文本场景
+
+#### 2. deepseek_rerank_service.py — Rerank 混合推荐（核心亮点）
+
+这是面试最值得讲的模块。Pipeline：
+
+```
+全部店铺 ──规则引擎初排──→ Top 30 ──构造Prompt──→ DeepSeek V4 ──返回JSON──→ 白名单过滤 ──→ 最终 Top 3
+```
+
+关键函数：
+- `ask_deepseek_rerank()` — 主流程编排
+- `_build_candidate_text()` — 将候选店铺格式化为 LLM 可读的文本
+- `_call_deepseek_api()` — 调 DeepSeek V4（非流式）
+- `_sanitize_or_fallback()` — **安全边界**：白名单过滤 + JSON 解析失败回退
+- `_fallback_to_rules()` — LLM 不可用时退回规则引擎
+
+**白名单过滤（防幻觉机制）**：LLM 可能编造不存在的店名（如候选里只有"学子餐厅"但 LLM 回复"银杏餐厅"）。`_sanitize_or_fallback()` 从规则引擎的候选列表构建店名白名单，只保留真正存在的店铺。这是整个流程的**安全边界，不能删**。
+
+#### 3. query_intent_service.py — 查询意图提取
+
+用 7 大类关键词字典匹配用户查询中的食物分类意图：
+
+| 分类 | 关键词示例 |
+|---|---|
+| 面食 | 面、拉面、刀削面、米线、抄手、饺子 |
+| 米饭 | 盖饭、炒饭、拌饭、套餐、米饭 |
+| 火锅 | 火锅、串串、冒菜、麻辣烫 |
+| 川菜 | 川菜、炒菜、回锅肉、宫保、水煮 |
+| 小吃 | 小吃、烧烤、炸鸡、奶茶 |
+| 汤品 | 汤、炖、粥、砂锅 |
+| 快餐 | 快餐、盒饭、便当、食堂 |
+
+`build_query_with_intent_hint()` 自动为查询附加意图提示，如 `"想吃面"` → `"想吃面（想吃：面食）"`，注入到 LLM 请求中增强推荐准确性。
+
+#### 4. user_profile.py — 用户画像构建
+
+不靠用户手动填写，从历史行为数据中"算"出偏好：
+
+- **数据来源**：最近 30 天行为事件 + 90 天反馈记录
+- **口味加权**：评分 >= 4 → 权重 1.5x，评分 <= 2 → 权重 0.5x
+- **输出格式**：`{hasProfile, summary, signals, stats}`
+- `has_profile` 阈值：查询 >= 3 次 或 反馈 >= 2 次
+
+画像以 `AGENT_USER_PROFILE_SUMMARY` 和 `AGENT_CATEGORY_KEYWORDS` 参数注入到 DeepSeek 的 System Prompt 中。
+
+### 新增 API 端点
+
+| 方法 | 路径 | 功能 |
+|---|---|---|
+| `POST` | `/api/recommend` | AI 推荐（3 模式自动分发） |
+
+请求体（`DeepSeekRecommendRequest`）：
+
+```json
+{
+  "query": "清水河吃面 20块",
+  "uid": "anon_xxx",
+  "top_k": 3
+}
+```
+
+响应体（`DeepSeekRecommendResponse`）：
+
+```json
+{
+  "ok": true,
+  "answer": "...",
+  "recommendations": [
+    {"name": "老麻抄手", "reason": "...", "match_score": 0.87}
+  ],
+  "engine": "deepseek_rerank"
+}
+```
+
+### 环境变量配置
+
+```env
+# 推荐模式选择
+RECOMMEND_PROVIDER=deepseek_rerank   # deepseek_api | deepseek_rerank | (其他=规则兜底)
+
+# DeepSeek V4 API
+DEEPSEEK_API_KEY=sk-xxx
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-v4
+DEEPSEEK_TIMEOUT_SECONDS=25
+DEEPSEEK_MAX_RETRIES=1
+DEEPSEEK_TEMPERATURE=0.3
+DEEPSEEK_MAX_TOKENS=1800
+```
+
+### 验证方法
+
+```bash
+cd backend
+
+# 1. 规则引擎兜底模式（无需 API Key）
+RECOMMEND_PROVIDER="" uvicorn app.main:app --port 8000
+# POST /api/recommend {"query": "清水河吃面 20块"} → 返回规则引擎结果
+
+# 2. DeepSeek API 模式（需配置 DEEPSEEK_API_KEY）
+RECOMMEND_PROVIDER=deepseek_api uvicorn app.main:app --port 8000
+# POST /api/recommend → DeepSeek V4 生成自然语言推荐
+
+# 3. DeepSeek Rerank 模式（需配置 DEEPSEEK_API_KEY）
+RECOMMEND_PROVIDER=deepseek_rerank uvicorn app.main:app --port 8000
+# POST /api/recommend → 规则初排 + LLM 精排
+```
+
+### 章末检查清单
+
+- [x] 三种模式（deepseek_api / deepseek_rerank / 规则兜底）都能正常返回
+- [x] 切换 `RECOMMEND_PROVIDER` 确实切换了引擎
+- [x] DeepSeek Rerank 模式的输出清洗能过滤幻觉店名
+- [x] 用户画像从历史数据中生成合理的摘要
+
+---
+
+## 知识点总结
+
+### Chapter 1 — 项目脚手架
+- FastAPI 应用结构、CORS 中间件、自定义中间件（UTF-8 编码）
+- 环境变量管理（`.env` / `python-dotenv`）
+- 用 `TestClient` 写 API 测试
+
+### Chapter 2 — 数据层
+- SQLite WAL 模式（写不阻塞读）
+- Double-Checked Locking（线程安全的数据库初始化）
+- `row_factory = sqlite3.Row`（字典式访问查询结果）
+- CSV 种子数据导入（`utf-8-sig` 处理 BOM 头）
+- 无 ORM 的手写 SQL（适合小表场景）
+
+### Chapter 3 — 规则引擎
+- 加权打分模型设计（多维度 + 附加分）
+- 关键词匹配 + 正则提取的 NLP 解析器
+- 场景别名系统（同义词归一化，支持 YAML 配置）
+- 跨午夜营业时间判断（`close_min < open_min → close_min += 1440`）
+- 预算评分直觉：预算内统一满分 + 越便宜附加分越高
+
+### Chapter 4 — API 路由 v1
+- FastAPI APIRouter（模块化路由组织）
+- Pydantic v2 模型定义 + `field_validator(mode="before")` 处理 JSON 字符串→数组转换
+- `response_model` 统一输出过滤（防止内部字段泄露）
+- HTTPException 异常处理（404 / 422）
+- TestClient 集成测试
+
+### Chapter 5 — AI 引擎
+- **LLM API 调用**：OpenAI 兼容的 chat/completions 格式，System/User/Assistant 多轮消息结构
+- **Rerank 架构模式**：规则引擎初排 + LLM 精排是业界常用的混合方案，兼顾速度与质量
+- **防幻觉（Anti-Hallucination）**：LLM 会编造不存在的信息。白名单过滤是安全边界——只允许推荐数据库里真实存在的店铺
+- **指数退避重试**：`sleep(2^attempt)` 避免瞬时失败导致的服务不可用，是生产环境的必备模式
+- **用户画像注入**：将用户历史行为"翻译"成人可读的偏好文本，注入 System Prompt，让 LLM 推荐更个性化
+- **查询意图增强**：用关键词字典提取分类意图，追加到查询中，提升 LLM 理解准确度
+- **Provider 模式**：通过环境变量切换推荐引擎，不影响路由层代码，方便 A/B 测试和灰度发布
+- **JSON 输出清洗**：LLM 可能返回 Markdown 包裹的 JSON（```json...```），需要做容错解析
