@@ -336,3 +336,129 @@ backend/tests/
     ├── TestRecommendResultStructure (1)
     └── TestBudgetScoring (4)         ← 含预算评分回归测试
 ```
+
+---
+
+## Chapter 4 完成：API 路由 v1
+
+**目标**：把规则引擎暴露为 REST API，创建完整的 MVP 端点集合。
+
+### 新增文件
+
+```
+backend/
+└── app/
+    ├── models/
+    │   └── schemas.py        # ★ 7 个 Pydantic 请求/响应模型
+    └── api/
+        └── routes.py          # ★ 6 个 MVP REST 端点
+```
+
+### schemas.py — Pydantic 数据模型
+
+| 模型 | 用途 |
+|---|---|
+| `RecommendRequest` | 推荐请求：`query`（必填，min_length=1）+ `top_k`（1-10，默认 3） |
+| `ParsedSlotsResponse` | 解析结果：budget_max / location / scene / taste / time |
+| `ShopResult` | 单个推荐结果：shop_id / name / campus / area / avg_price / score / reason |
+| `RecommendMeta` | 元数据：total_candidates / returned / engine |
+| `RecommendResponse` | 推荐完整响应 = parsed + recommendations + meta |
+| `HealthResponse` | 健康检查响应 |
+| `HotRankingItem` / `HotRankingResponse` | 热门排行 |
+
+### routes.py — 6 个 API 端点
+
+| 方法 | 路径 | 功能 |
+|---|---|---|
+| `GET` | `/api/v1/health` | 健康检查 |
+| `POST` | `/api/v1/recommend` | 核心推荐（输入 query → 返回解析 + 推荐 + 元数据） |
+| `GET` | `/api/v1/stores/detail?name=...` | 按店名查店铺详情 |
+| `GET` | `/api/v1/stores/suggest?keyword=...` | 店名模糊搜索（自动补全） |
+| `GET` | `/api/v1/rankings/today` | 热门排行（按评分降序 Top 5） |
+
+### main.py 变更
+
+- 移除了直接在 `main.py` 中定义的 `/api/v1/health` 端点
+- 新增 `app.include_router(router, prefix="/api/v1", tags=["mvp"])` 挂载路由
+- 所有端点统一通过 APIRouter 管理，main.py 只负责应用启动和中间件
+
+### API 验证结果
+
+```
+1. GET  /health              → 200 {"status": "ok"}
+2. POST /recommend           → 200 {
+     "parsed": {"budget_max": 25.0, "location": "清水河",
+                "scene": "一个人", "taste": "清淡", "time": null},
+     "recommendations": [
+       {"name": "银桦餐厅", "score": 0.968, "avg_price": 10.0, ...},
+       {"name": "学子餐厅", "score": 0.9656, "avg_price": 12.0, ...},
+       {"name": "龙湖米线", "score": 0.9536, "avg_price": 22.0, ...}
+     ],
+     "meta": {"total_candidates": 8, "returned": 3, "engine": "rule-based"}
+   }
+3. GET  /stores/detail       → 200 {"data": {"name": "学子餐厅", ...}}
+4. GET  /stores/suggest      → 200 {"suggestions": ["龙湖米线", "龙湖火锅"]}
+5. GET  /rankings/today      → 200 返回 5 家店铺
+6. GET  /stores/detail (404) → 404 {"detail": "店铺不存在"}
+7. GET  /docs                → 200 Swagger UI 正常访问
+```
+
+### 如何运行
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+然后打开 http://localhost:8000/docs 用 Swagger 测试所有端点。
+
+### 章末检查清单
+
+- [x] 所有端点能在 Swagger 文档中看到
+- [x] `POST /api/v1/recommend` 返回 parsed + recommendations + meta 三部分
+- [x] `GET /api/v1/stores/detail?name=...` 返回完整店铺信息
+- [x] `GET /api/v1/stores/suggest?keyword=...` 返回店名列表
+- [x] `GET /api/v1/rankings/today` 返回热门排行
+
+---
+
+## Chapter 4 代码审查 + 修复
+
+以下四个问题在代码审查中被发现并已修复：
+
+### #1 stores/detail 暴露了数据库原始字段
+
+**问题**：`GET /stores/detail` 直接返回 SQLite 查出的原始 dict，暴露了 `created_at`、`updated_at`、`poi_id` 等内部字段，且 `tastes` / `scenes` / `tags` / `image_urls` 是 JSON 字符串（如 `'["清淡","家常"]'`）而非真正的数组。
+
+**修复**：新增 `StoreDetailResponse` Pydantic 模型，用 `field_validator` 把 JSON 字符串自动解析为 Python list，同时只对外暴露 17 个消费者需要的字段，内部字段自动过滤。
+
+### #2 stores/suggest 和 rankings/today 缺少 response_model
+
+**问题**：`health` 和 `recommend` 有显式 `response_model`，但 `stores/suggest` 和 `rankings/today` 没有，Swagger 文档不够清晰，且缺少输出过滤保护。
+
+**修复**：新增 `StoreSuggestResponse` 模型，`stores/suggest` 和 `rankings/today` 端点均加上了 `response_model`。现在 6 个端点全部统一有 Pydantic 模型约束。
+
+### #3 热门排行是"伪排行"
+
+当前 `rating` 字段基本为 NULL，排序结果接近原始顺序。第四章的实现是**预留排行榜接口**，在数据充实之前不宣称有排序算法。routes.py 的 docstring 也已标注"简易实现"。
+
+### #4 API 层测试（16 个用例）
+
+```
+backend/tests/
+└── test_api.py          # ★ 新增
+    ├── TestHealthAPI (1)
+    ├── TestRecommendAPI (6)     ← 含空 query 422、top_k 越界 422
+    ├── TestStoreDetailAPI (3)   ← 含 404、空 name 422、字段白名单校验
+    ├── TestStoreSuggestAPI (4)  ← 含精确匹配/部分匹配/无结果/空 keyword 422
+    └── TestRankingsAPI (2)      ← 含结构校验、排序验证
+```
+
+### 总测试覆盖：73 个用例
+
+| 文件 | 数量 | 覆盖层 |
+|---|---|---|
+| `test_parser.py` | 36 | 查询解析 |
+| `test_recommender.py` | 21 | 推荐引擎 |
+| `test_api.py` | 16 | HTTP 接口 |
