@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from app.api.routes import router
+
 # 自动加载 backend/.env
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env", override=False)
 
@@ -43,7 +45,5 @@ app.add_middleware(
 app.add_middleware(Utf8ResponseMiddleware)
 
 
-# ===== 健康检查 =====
-@app.get("/api/v1/health")
-def health():
-    return {"status": "ok"}
+# ===== 挂载路由 =====
+app.include_router(router, prefix="/api/v1", tags=["mvp"])
