@@ -735,6 +735,76 @@ curl -i http://localhost:8000/api/auth/me -H "Authorization: Bearer $TOKEN"
 
 ---
 
+## Chapter 7 完成：配套功能
+
+**目标**：补全后端 5 个配套模块——反馈、收藏、广告、事件追踪、热门排行。每个模块独立可测。
+
+### 新增/重写文件
+
+```
+backend/
+└── app/
+    ├── api/
+    │   └── routes.py              # 新增 7 个端点，热门排行升级为事件驱动
+    ├── models/
+    │   └── schemas.py             # 新增 8 个请求/响应模型
+    └── services/
+        ├── feedback_repository.py  # ★ 重写：save_feedback + get_feedback_by_user
+        ├── favorites_repository.py # ★ 重写：add/remove/list + OR IGNORE 幂等
+        ├── ad_repository.py        # ★ 广告位查询 + 点击追踪 + 种子数据
+        ├── usage_events.py         # ★ 重写：log/list/bind 事件追踪
+        └── hot_ranking.py          # ★ 基于查询事件统计的实时热门排行
+```
+
+### 五个模块
+
+#### 1. 反馈（feedback_repository.py）
+- `save_feedback()` — 写入 `feedback_submissions` 表，支持 `dining_feedback` / `new_store` 两种类型
+- `get_feedback_by_user()` — 按 uid 或 user_id 查询历史反馈
+
+#### 2. 收藏（favorites_repository.py）
+- `add_favorite()` — `INSERT OR IGNORE` 保证幂等（UNIQUE 约束防重复）
+- `remove_favorite()` — 按 user_id + shop_id 删除
+- `list_favorites()` — 按用户查询所有收藏
+- `add_favorite_if_not_exists()` — 按店名查 shop_id 后插入，用于 sync-local
+
+#### 3. 广告（ad_repository.py）
+- `list_public_ad_slots()` — 查询当前生效中的广告位（is_active=1 + 时间范围检查）
+- `log_ad_click_event()` — 记录广告点击
+- `seed_default_ads()` — 首次访问时插入 3 条默认广告（双重检查锁，只插一次）
+
+#### 4. 事件追踪（usage_events.py）
+- `log_usage_event()` — 记录通用行为事件到 `usage_events` 表
+- `list_recent_events()` — 按时间窗口查询用户事件
+- `bind_anonymous_events_to_user()` — 登录后将匿名事件绑定到 userId
+- **埋点 try/except 吞异常**：埋点失败不阻塞主流程
+
+#### 5. 热门排行（hot_ranking.py）
+- `get_today_hot_rankings()` — 从 `usage_events` 表统计今日查询次数最高的店铺
+- 升级了 `/api/v1/rankings/today`：有事件数据时用真实统计，无数据时回退评分排序
+
+### 新增 API 端点
+
+| 方法 | 路径 | 功能 |
+|---|---|---|
+| `POST` | `/api/v1/feedback` | 提交反馈 |
+| `POST` | `/api/v1/favorites` | 添加收藏 |
+| `GET` | `/api/v1/favorites?user_id=...` | 查询收藏 |
+| `DELETE` | `/api/v1/favorites` | 取消收藏 |
+| `GET` | `/api/v1/ads/slots` | 获取广告位 |
+| `POST` | `/api/v1/events/ad-click` | 广告点击 |
+| `POST` | `/api/v1/events/track` | 事件追踪 |
+
+### 章末检查清单
+
+- [x] 反馈能正常写入（返回插入 ID）
+- [x] 收藏增删查正常，重复收藏幂等
+- [x] 广告位能展示、点击能记录
+- [x] 事件追踪不阻塞主流程（埋点 try/except）
+- [x] 热门排行从真实事件数据中统计，无数据时回退评分排序
+
+---
+
 ## 知识点总结
 
 ### Chapter 1 — 项目脚手架
@@ -781,3 +851,11 @@ curl -i http://localhost:8000/api/auth/me -H "Authorization: Bearer $TOKEN"
 - **openid 哈希保护**：`sha256(salt:openid)[:24]` 单向不可逆，防止拖库后泄露原始 openid
 - **OAuth code2session 流程**：wx.login() → code → 微信服务器 → openid → 自己的 JWT
 - **匿名优先身份体系**：先分配匿名 ID，登录后通过 `/profile/sync-local` 合并数据
+
+### Chapter 7 — 配套功能
+- **INSERT OR IGNORE 幂等性**：`UNIQUE(user_id, shop_id) + OR IGNORE` 让重复请求不报错，前端可安全重试
+- **DELETE 请求带 JSON body**：FastAPI 的 Pydantic 模型可自动解析 DELETE 请求体，但 TestClient 需用 `client.request("DELETE", ...)`
+- **埋点 fire-and-forget**：`try/except` 吞异常，宁可漏日志也不阻塞主流程
+- **事件驱动排行榜**：从 `usage_events` 表 `GROUP BY shop_name ORDER BY COUNT(*)` 统计热门，有数据用真实统计否则回退评分排序
+- **广告种子数据**：首次访问时用 `COUNT(*) = 0` 检查 + 插入默认数据，双重检查保证不重复
+- **热门排行标签容错**：`shop["category"] or "美食"` 处理 NULL 字段，避免 Pydantic 校验失败

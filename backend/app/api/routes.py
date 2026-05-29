@@ -3,6 +3,11 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Query
 
 from app.models.schemas import (
+    AdClickEventRequest,
+    AdSlotsResponse,
+    FeedbackRequest,
+    FavoriteRemoveRequest,
+    FavoriteRequest,
     HealthResponse,
     HotRankingItem,
     HotRankingResponse,
@@ -13,10 +18,16 @@ from app.models.schemas import (
     ShopResult,
     StoreDetailResponse,
     StoreSuggestResponse,
+    TrackEventRequest,
 )
+from app.services.ad_repository import list_public_ad_slots, log_ad_click_event, seed_default_ads
+from app.services.favorites_repository import add_favorite, list_favorites, remove_favorite
+from app.services.feedback_repository import save_feedback
+from app.services.hot_ranking import get_today_hot_rankings
 from app.services.parser import parse_query
 from app.services.recommender import recommend
 from app.services.shop_repository import fetch_active_shops, fetch_store_detail_by_name, suggest_store_names
+from app.services.usage_events import log_usage_event
 
 router = APIRouter()
 
@@ -83,10 +94,29 @@ def get_store_suggestions(keyword: str = Query(..., min_length=1)):
     return {"suggestions": names}
 
 
-# ---- 热门排行（简化版） ----
+# ---- 热门排行 ----
 @router.get("/rankings/today", response_model=HotRankingResponse)
 def get_today_rankings():
-    """简易实现：按评分排序取 Top 5（当前评分数据不完整，结果接近原始顺序）"""
+    """基于真实查询事件统计的热门排行。若无事件数据则回退评分排序。"""
+    seed_default_ads()  # 首次访问时初始化广告种子数据
+
+    items_data = get_today_hot_rankings(limit=5)
+    if items_data:
+        items = []
+        for item in items_data:
+            items.append(HotRankingItem(
+                rank=item["rank"],
+                name=item["name"],
+                tag=item["tag"],
+                avg_price=item["avg_price"],
+                query=item.get("query", item["name"]),
+            ))
+        return HotRankingResponse(
+            items=items,
+            generated_at=datetime.now(timezone.utc).isoformat(),
+        )
+
+    # 回退：按评分排序
     shops = fetch_active_shops()
     shops.sort(key=lambda s: s.get("rating") or 0, reverse=True)
     items = []
@@ -102,3 +132,73 @@ def get_today_rankings():
         items=items,
         generated_at=datetime.now(timezone.utc).isoformat(),
     )
+
+
+# ---- 用户反馈 ----
+@router.post("/feedback")
+def submit_feedback(req: FeedbackRequest):
+    fid = save_feedback(
+        feedback_type=req.feedbackType,
+        store_name=req.storeName,
+        rating=req.rating,
+        scene_tags=req.sceneTags,
+        taste_tags=req.tasteTags,
+        recommend_dish=req.recommendDish,
+        comment=req.comment,
+        uid=req.uid,
+        user_id=req.userId,
+        anonymous_id=req.anonymousId,
+    )
+    return {"ok": True, "id": fid}
+
+
+# ---- 收藏 ----
+@router.post("/favorites")
+def add_user_favorite(req: FavoriteRequest):
+    add_favorite(user_id=req.user_id, shop_id=req.shop_id, shop_name=req.shop_name)
+    return {"ok": True}
+
+
+@router.get("/favorites")
+def get_user_favorites(user_id: str = Query(..., min_length=1)):
+    return {"favorites": list_favorites(user_id)}
+
+
+@router.delete("/favorites")
+def remove_user_favorite(req: FavoriteRemoveRequest):
+    remove_favorite(user_id=req.user_id, shop_id=req.shop_id)
+    return {"ok": True}
+
+
+# ---- 广告 ----
+@router.get("/ads/slots", response_model=AdSlotsResponse)
+def get_ad_slots(limit: int = Query(default=5, ge=1, le=20)):
+    seed_default_ads()
+    return {"slots": list_public_ad_slots(limit=limit)}
+
+
+@router.post("/events/ad-click")
+def log_ad_click(req: AdClickEventRequest):
+    log_ad_click_event(
+        slot_id=req.slotId,
+        uid=req.uid,
+        user_id=req.userId,
+        anonymous_id=req.anonymousId,
+    )
+    return {"ok": True}
+
+
+# ---- 事件追踪 ----
+@router.post("/events/track")
+def track_event(req: TrackEventRequest):
+    log_usage_event(
+        event_type=req.event_type,
+        uid=req.uid,
+        user_id=req.user_id,
+        anonymous_id=req.anonymous_id,
+        query_text=req.query_text,
+        shop_id=req.shop_id,
+        shop_name=req.shop_name,
+        extra=req.extra,
+    )
+    return {"ok": True}

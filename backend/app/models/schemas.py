@@ -143,3 +143,61 @@ class AuthMeResponse(BaseModel):
 class ProfileSyncRequest(BaseModel):
     anonymousId: str = ""
     favorites: list[str] = []
+
+
+# ===== 反馈 =====
+class FeedbackRequest(BaseModel):
+    feedbackType: str = Field(..., min_length=1)
+    storeName: str = Field(..., min_length=1)
+    rating: Optional[int] = Field(default=None, ge=1, le=5)
+    sceneTags: Optional[str] = None
+    tasteTags: Optional[str] = None
+    recommendDish: Optional[str] = None
+    comment: Optional[str] = None
+    uid: Optional[str] = None
+    userId: Optional[str] = None
+    anonymousId: Optional[str] = None
+
+
+# ===== 收藏 =====
+class FavoriteRequest(BaseModel):
+    user_id: str = Field(..., min_length=1)
+    shop_id: int = Field(..., ge=1)
+    shop_name: str = ""
+
+
+class FavoriteRemoveRequest(BaseModel):
+    user_id: str = Field(..., min_length=1)
+    shop_id: int = Field(..., ge=1)
+
+
+# ===== 广告 =====
+class AdSlotItem(BaseModel):
+    id: int
+    title: str
+    image_url: Optional[str] = None
+    landing_type: Optional[str] = None
+    landing_value: Optional[str] = None
+
+
+class AdSlotsResponse(BaseModel):
+    slots: list[dict]
+
+
+class AdClickEventRequest(BaseModel):
+    slotId: int = Field(..., ge=1)
+    uid: str = ""
+    userId: str = ""
+    anonymousId: str = ""
+
+
+# ===== 事件追踪 =====
+class TrackEventRequest(BaseModel):
+    event_type: str = Field(..., min_length=1)
+    uid: str = ""
+    user_id: str = ""
+    anonymous_id: str = ""
+    query_text: str = ""
+    shop_id: Optional[int] = None
+    shop_name: str = ""
+    extra: Optional[dict] = None
