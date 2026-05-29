@@ -14,7 +14,7 @@ The project is currently in early planning/prototyping stage. The `复现计划/
 |-------|-----------|
 | Backend framework | FastAPI (Python 3.11) |
 | Database | SQLite (single-file, WAL mode, no ORM) |
-| AI provider | DeepSeek API (deepseek-v4) |
+| AI provider | DeepSeek API (deepseek-chat) |
 | Web frontend | Next.js 15 (App Router, `"use client"`) |
 | Mini Program | 原生 WeChat Mini Program |
 | Deployment | Render (backend) + Vercel (frontend) |

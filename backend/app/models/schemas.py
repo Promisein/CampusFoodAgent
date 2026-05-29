@@ -119,3 +119,27 @@ class DeepSeekRecommendResponse(BaseModel):
     code: int = 0
     finishReason: str = ""
     recommendations: list[dict] = []
+
+
+# ===== 用户认证 =====
+class WechatLoginRequest(BaseModel):
+    code: str = Field(..., min_length=1)
+    anonymousId: str = ""
+
+
+class WechatLoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    expires_in: int
+    userId: str
+    anonymousId: str = ""
+
+
+class AuthMeResponse(BaseModel):
+    userId: str
+    authenticated: bool = True
+
+
+class ProfileSyncRequest(BaseModel):
+    anonymousId: str = ""
+    favorites: list[str] = []

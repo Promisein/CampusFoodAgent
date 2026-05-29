@@ -600,7 +600,7 @@ RECOMMEND_PROVIDER=deepseek_rerank   # deepseek_api | deepseek_rerank | (其他=
 # DeepSeek V4 API
 DEEPSEEK_API_KEY=sk-xxx
 DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-v4
+DEEPSEEK_MODEL=deepseek-chat
 DEEPSEEK_TIMEOUT_SECONDS=25
 DEEPSEEK_MAX_RETRIES=1
 DEEPSEEK_TEMPERATURE=0.3
@@ -631,6 +631,107 @@ RECOMMEND_PROVIDER=deepseek_rerank uvicorn app.main:app --port 8000
 - [x] 切换 `RECOMMEND_PROVIDER` 确实切换了引擎
 - [x] DeepSeek Rerank 模式的输出清洗能过滤幻觉店名
 - [x] 用户画像从历史数据中生成合理的摘要
+
+---
+
+## Chapter 6 完成：用户认证
+
+**目标**：实现匿名优先 + 可选微信登录的用户身份体系，包括 JWT 签发/验证和匿名↔登录数据迁移。
+
+### 新增文件
+
+```
+backend/
+├── .env.example                  # 新增 AUTH_TOKEN_SECRET, 微信配置
+└── app/
+    ├── api/
+    │   └── auth.py               # ★ require_authenticated_user 鉴权依赖
+    ├── models/
+    │   └── schemas.py            # 新增 WechatLoginRequest/Response, AuthMeResponse, ProfileSyncRequest
+    ├── api/
+    │   └── proxy_routes.py       # 新增 /auth/wechat-login, /auth/me, /profile/sync-local
+    └── services/
+        ├── auth_token_service.py  # ★ 手写 JWT HS256（签发 + 验证）
+        ├── wechat_auth_service.py # ★ 微信 jscode2session → hashed userId → JWT
+        └── favorites_repository.py # 用户收藏（占位，第 7 章实现）
+```
+
+### 新增 API 端点
+
+| 方法 | 路径 | 鉴权 | 功能 |
+|---|---|---|---|
+| `POST` | `/api/auth/wechat-login` | 无 | 微信 code 换 JWT |
+| `GET` | `/api/auth/me` | Bearer Token | 查看当前用户 |
+| `POST` | `/api/profile/sync-local` | Bearer Token | 匿名数据迁移到登录账号 |
+
+### auth_token_service.py — 手写 JWT HS256
+
+三段式结构：`Header.Payload.Signature`
+
+- `issue_access_token(user_id)` — 签发，默认 7 天有效期
+- `verify_access_token(token)` — 验证签名 + 检查过期，失败抛 `AuthTokenError`
+- `extract_bearer_token(authorization)` — 从 `Authorization: Bearer <token>` 头提取 token
+- `hmac.compare_digest()` 防时序攻击
+
+### wechat_auth_service.py — 微信登录
+
+- `login_with_wechat_code(code, anonymous_id)` → `{access_token, userId, ...}`
+- openid 通过 `sha256(salt:openid)[:24]` 哈希为内部 `wx_` 前缀 userId，保护原始 openid
+- `WechatAuthError` 统一错误处理
+
+### auth.py — FastAPI 鉴权依赖
+
+```python
+from app.api.auth import require_authenticated_user
+
+@router.get("/protected")
+def protected(user_id: str = Depends(require_authenticated_user)):
+    ...
+```
+
+- 使用 `Header(None)` 自动注入 Authorization 头
+- Token 无效 → 401，过期 → 401
+
+### 环境变量配置
+
+```env
+# JWT 密钥
+AUTH_TOKEN_SECRET=dev-secret-change-me
+
+# 微信小程序
+WECHAT_MINIPROGRAM_APPID=your_wechat_appid
+WECHAT_MINIPROGRAM_SECRET=your_wechat_secret
+WECHAT_AUTH_TOKEN_TTL_SECONDS=604800
+WECHAT_AUTH_TIMEOUT_SECONDS=8
+WECHAT_USER_ID_SALT=chedian-salt
+```
+
+### 验证结果
+
+```bash
+# JWT 签发/验证
+python -c "
+from app.services.auth_token_service import issue_access_token, verify_access_token
+token = issue_access_token('test_user_123')
+claims = verify_access_token(token)
+print(claims['sub'])  # test_user_123
+"
+
+# auth/me 不带 token → 401
+curl -i http://localhost:8000/api/auth/me
+# → 401
+
+# auth/me 带有效 token → 200
+curl -i http://localhost:8000/api/auth/me -H "Authorization: Bearer $TOKEN"
+# → {"userId": "...", "authenticated": true}
+```
+
+### 章末检查清单
+
+- [x] JWT 签发和验证正常（签发 → 验证 → 过期拦截）
+- [x] `/api/auth/me` 不带 token 返回 401，带有效 token 返回 200
+- [x] 微信登录入口能正常校验参数（未配置 appid 时返回明确错误）
+- [x] 登录后数据同步端点需要鉴权
 
 ---
 
@@ -671,3 +772,12 @@ RECOMMEND_PROVIDER=deepseek_rerank uvicorn app.main:app --port 8000
 - **查询意图增强**：用关键词字典提取分类意图，追加到查询中，提升 LLM 理解准确度
 - **Provider 模式**：通过环境变量切换推荐引擎，不影响路由层代码，方便 A/B 测试和灰度发布
 - **JSON 输出清洗**：LLM 可能返回 Markdown 包裹的 JSON（```json...```），需要做容错解析
+
+### Chapter 6 — 用户认证
+- **JWT 三段式结构**：`base64(Header).base64(Payload).HMAC-SHA256(签名)`，手写实现可深入理解原理
+- **HMAC-SHA256 签名验证**：`hmac.compare_digest()` 防时序攻击（恒定时间比较）
+- **Base64 URL Safe 编码**：去掉 `=` 填充，替换 `+/` 为 `-_`，URL 中不用转义
+- **FastAPI 依赖注入鉴权**：`Depends(require_authenticated_user)` + `Header(None)` 自动注入 Authorization 头
+- **openid 哈希保护**：`sha256(salt:openid)[:24]` 单向不可逆，防止拖库后泄露原始 openid
+- **OAuth code2session 流程**：wx.login() → code → 微信服务器 → openid → 自己的 JWT
+- **匿名优先身份体系**：先分配匿名 ID，登录后通过 `/profile/sync-local` 合并数据
