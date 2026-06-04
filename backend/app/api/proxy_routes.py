@@ -7,14 +7,19 @@ from app.models.schemas import (
     AuthMeResponse,
     DeepSeekRecommendRequest,
     DeepSeekRecommendResponse,
+    EmailLoginRequest,
+    EmailRegisterRequest,
     ProfileSyncRequest,
     WechatLoginRequest,
     WechatLoginResponse,
 )
+from app.services.account_service import create_email_user, get_user_by_email
+from app.services.auth_token_service import issue_access_token
 from app.services.deepseek_rerank_service import ask_deepseek_rerank
 from app.services.deepseek_service import ask_deepseek
 from app.services.favorites_repository import add_favorite_if_not_exists
 from app.services.parser import parse_query
+from app.services.password_service import verify_password, hash_password
 from app.services.query_intent_service import build_query_with_intent_hint, extract_query_intents
 from app.services.recommender import recommend as rule_recommend
 from app.services.usage_events import bind_anonymous_events_to_user
@@ -89,6 +94,53 @@ def post_recommend(req: DeepSeekRecommendRequest):
                 for r in results
             ],
         )
+
+
+# ---- 邮箱注册 ----
+@proxy_router.post("/auth/email-register", response_model=WechatLoginResponse)
+def email_register(req: EmailRegisterRequest):
+    try:
+        password_hash = hash_password(req.password)
+        user_id = create_email_user(req.email, password_hash)
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+    if req.anonymousId:
+        bind_anonymous_events_to_user(req.anonymousId, user_id)
+
+    token = issue_access_token(user_id)
+    ttl = int(os.getenv("WECHAT_AUTH_TOKEN_TTL_SECONDS", "604800"))
+    return WechatLoginResponse(
+        access_token=token,
+        token_type="Bearer",
+        expires_in=ttl,
+        userId=user_id,
+        anonymousId=req.anonymousId,
+    )
+
+
+# ---- 邮箱登录 ----
+@proxy_router.post("/auth/email-login", response_model=WechatLoginResponse)
+def email_login(req: EmailLoginRequest):
+    user = get_user_by_email(req.email)
+    if not user or not user.get("password_hash"):
+        raise HTTPException(status_code=401, detail="邮箱或密码错误")
+
+    if not verify_password(req.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="邮箱或密码错误")
+
+    if req.anonymousId:
+        bind_anonymous_events_to_user(req.anonymousId, user["id"])
+
+    token = issue_access_token(user["id"])
+    ttl = int(os.getenv("WECHAT_AUTH_TOKEN_TTL_SECONDS", "604800"))
+    return WechatLoginResponse(
+        access_token=token,
+        token_type="Bearer",
+        expires_in=ttl,
+        userId=user["id"],
+        anonymousId=req.anonymousId,
+    )
 
 
 # ---- 微信登录 ----

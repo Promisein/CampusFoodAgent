@@ -32,5 +32,9 @@ env/
 # Database
 *.db
 
+# Node / Next.js
+node_modules/
+.next/
+
 # Claude local config
 .claude/

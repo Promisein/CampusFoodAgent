@@ -1,4 +1,5 @@
 import json
+import re
 from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
@@ -140,6 +141,34 @@ class AuthMeResponse(BaseModel):
     authenticated: bool = True
 
 
+class EmailRegisterRequest(BaseModel):
+    email: str = Field(..., min_length=5, max_length=120)
+    password: str = Field(..., min_length=6, max_length=128)
+    anonymousId: str = ""
+
+    @field_validator("email")
+    @classmethod
+    def _validate_email(cls, v: str) -> str:
+        email = v.strip().lower()
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+            raise ValueError("invalid email format")
+        return email
+
+
+class EmailLoginRequest(BaseModel):
+    email: str = Field(..., min_length=5, max_length=120)
+    password: str = Field(..., min_length=1)
+    anonymousId: str = ""
+
+    @field_validator("email")
+    @classmethod
+    def _validate_email(cls, v: str) -> str:
+        email = v.strip().lower()
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+            raise ValueError("invalid email format")
+        return email
+
+
 class ProfileSyncRequest(BaseModel):
     anonymousId: str = ""
     favorites: list[str] = []
@@ -161,13 +190,11 @@ class FeedbackRequest(BaseModel):
 
 # ===== 收藏 =====
 class FavoriteRequest(BaseModel):
-    user_id: str = Field(..., min_length=1)
     shop_id: int = Field(..., ge=1)
     shop_name: str = ""
 
 
 class FavoriteRemoveRequest(BaseModel):
-    user_id: str = Field(..., min_length=1)
     shop_id: int = Field(..., ge=1)
 
 
@@ -181,7 +208,7 @@ class AdSlotItem(BaseModel):
 
 
 class AdSlotsResponse(BaseModel):
-    slots: list[dict]
+    slots: list[AdSlotItem]
 
 
 class AdClickEventRequest(BaseModel):

@@ -11,16 +11,21 @@ class WechatAuthError(Exception):
     pass
 
 
-def _make_user_id(openid: str) -> str:
-    """将 openid 哈希为内部 userId（保护原始 openid）"""
+def _make_openid_hash(openid: str) -> str:
+    """对 openid 做单向哈希（保护原始 openid）"""
     salt = os.getenv("WECHAT_USER_ID_SALT", "chedian-salt")
-    hash_hex = hashlib.sha256(f"{salt}:{openid}".encode()).hexdigest()
-    return f"wx_{hash_hex[:24]}"
+    return hashlib.sha256(f"{salt}:{openid}".encode()).hexdigest()[:24]
+
+
+def _make_user_id(openid_hash: str) -> str:
+    """由 openid_hash 生成系统内部 userId"""
+    return f"wx_{openid_hash}"
 
 
 def login_with_wechat_code(code: str, anonymous_id: str = "") -> dict:
     """
     用 wx.login() 返回的 code 换取 openid，签发 JWT。
+    同时写入 users 表和 wechat_identities 表（幂等）。
     返回：{access_token, token_type, expires_in, userId, anonymousId}
     """
     appid = os.getenv("WECHAT_MINIPROGRAM_APPID", "")
@@ -54,7 +59,21 @@ def login_with_wechat_code(code: str, anonymous_id: str = "") -> dict:
     if not openid:
         raise WechatAuthError("no openid returned")
 
-    user_id = _make_user_id(openid)
+    openid_hash = _make_openid_hash(openid)
+    user_id = _make_user_id(openid_hash)
+
+    # 写入 users + wechat_identities（幂等，跨多端统一 user_id）
+    try:
+        from app.services.account_service import ensure_wechat_user, save_wechat_identity
+        from app.services.usage_events import bind_anonymous_events_to_user
+
+        ensure_wechat_user(user_id)
+        save_wechat_identity(user_id, openid_hash)
+        if anonymous_id:
+            bind_anonymous_events_to_user(anonymous_id, user_id)
+    except Exception as e:
+        raise WechatAuthError(f"account persistence failed: {e}") from e
+
     from app.services.auth_token_service import issue_access_token
 
     token = issue_access_token(user_id)

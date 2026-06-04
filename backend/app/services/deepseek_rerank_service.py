@@ -24,8 +24,11 @@ def ask_deepseek_rerank(query: str, uid: str = "", **kwargs) -> dict:
 
     user_prompt = f"用户需求：{query}\n\n候选店铺列表：\n{candidate_text}"
 
-    # Step 3：调 DeepSeek V4 API
-    raw_output = _call_deepseek_api(system_prompt, user_prompt)
+    # Step 3：调 DeepSeek V4 API（失败回退规则引擎）
+    try:
+        raw_output = _call_deepseek_api(system_prompt, user_prompt)
+    except Exception:
+        return _fallback_to_rules(candidates)
 
     # Step 4：输出清洗
     return _sanitize_or_fallback(raw_output, candidates)
@@ -47,7 +50,7 @@ def _call_deepseek_api(system_prompt: str, user_prompt: str) -> str:
     """调 DeepSeek V4 API（非流式）"""
     endpoint = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/") + "/chat/completions"
     api_key = os.getenv("DEEPSEEK_API_KEY", "")
-    model = os.getenv("DEEPSEEK_MODEL", "deepseek-v4")
+    model = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
     temperature = float(os.getenv("DEEPSEEK_TEMPERATURE", "0.3"))
     max_tokens = int(os.getenv("DEEPSEEK_MAX_TOKENS", "1800"))
 
@@ -91,19 +94,37 @@ def _sanitize_or_fallback(raw_output: str, candidates: list[dict]) -> dict:
                 text = text[:-3]
         parsed = json.loads(text)
         items = parsed.get("recommendations", [])
+        if not isinstance(items, list):
+            return _fallback_to_rules(candidates)
     except (json.JSONDecodeError, AttributeError):
         # JSON 解析失败 → 回退规则引擎
         return _fallback_to_rules(candidates)
 
-    # 白名单过滤：只保留在候选中的店名
-    clean = [item for item in items if item.get("name", "") in valid_names]
+    # 白名单过滤：只保留在候选中的店名，并用本地候选数据补齐 shop_id / campus / price 等可信字段。
+    candidate_by_name = {c["name"]: c for c in candidates}
+    clean = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        name = item.get("name", "")
+        if name not in valid_names:
+            continue
+
+        candidate = candidate_by_name[name]
+        clean.append(
+            {
+                **candidate,
+                "reason": item.get("reason") or candidate.get("reason", ""),
+                "match_score": item.get("match_score", candidate.get("score", 0)),
+            }
+        )
 
     if len(clean) < 1:
         return _fallback_to_rules(candidates)
 
     return {
         "ok": True,
-        "answer": raw_output,
+        "answer": "",
         "recommendations": clean[:3],
         "engine": "deepseek_rerank",
     }

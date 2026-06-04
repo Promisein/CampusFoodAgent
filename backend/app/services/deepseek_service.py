@@ -31,7 +31,7 @@ def ask_deepseek(
     messages.append({"role": "user", "content": query})
 
     payload = {
-        "model": os.getenv("DEEPSEEK_MODEL", "deepseek-v4"),
+        "model": os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
         "messages": messages,
         "temperature": float(os.getenv("DEEPSEEK_TEMPERATURE", "0.3")),
         "max_tokens": int(os.getenv("DEEPSEEK_MAX_TOKENS", "1800")),

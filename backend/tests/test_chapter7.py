@@ -29,52 +29,61 @@ class TestFeedback:
 
 # ---- 收藏 ----
 
+from app.services.auth_token_service import issue_access_token
+
+
+def _auth_header(user_id: str) -> dict:
+    """助手：用指定 userId 签发 JWT 并返回 Authorization header"""
+    token = issue_access_token(user_id)
+    return {"Authorization": f"Bearer {token}"}
+
+
 class TestFavorites:
     def test_add_favorite_ok(self):
         r = client.post("/api/v1/favorites", json={
-            "user_id": "test_fav_user",
             "shop_id": 1,
             "shop_name": "学子餐厅",
-        })
+        }, headers=_auth_header("test_fav_user"))
         assert r.status_code == 200
         assert r.json()["ok"] is True
 
     def test_add_duplicate_favorite_is_idempotent(self):
         """重复收藏不报错（INSERT OR IGNORE）"""
+        headers = _auth_header("test_dup_user")
         for _ in range(2):
             r = client.post("/api/v1/favorites", json={
-                "user_id": "test_dup_user",
                 "shop_id": 1,
                 "shop_name": "学子餐厅",
-            })
+            }, headers=headers)
             assert r.status_code == 200
 
     def test_list_favorites(self):
+        headers = _auth_header("test_list_user")
         # 先添加几条
         for sid in [2, 3]:
             client.post("/api/v1/favorites", json={
-                "user_id": "test_list_user",
                 "shop_id": sid,
                 "shop_name": f"Shop{sid}",
-            })
-        r = client.get("/api/v1/favorites?user_id=test_list_user")
+            }, headers=headers)
+        r = client.get("/api/v1/favorites", headers=headers)
         assert r.status_code == 200
         assert len(r.json()["favorites"]) >= 2
 
     def test_remove_favorite(self):
-        user_id = "test_remove_user"
+        headers = _auth_header("test_remove_user")
         client.post("/api/v1/favorites", json={
-            "user_id": user_id, "shop_id": 1, "shop_name": "学子餐厅",
-        })
+            "shop_id": 1, "shop_name": "学子餐厅",
+        }, headers=headers)
         r = client.request("DELETE", "/api/v1/favorites", json={
-            "user_id": user_id, "shop_id": 1,
-        })
+            "shop_id": 1,
+        }, headers=headers)
         assert r.status_code == 200
         assert r.json()["ok"] is True
 
-    def test_list_requires_user_id(self):
-        r = client.get("/api/v1/favorites?user_id=")
-        assert r.status_code == 422
+    def test_list_requires_auth(self):
+        """不带 token 访问收藏 → 401"""
+        r = client.get("/api/v1/favorites")
+        assert r.status_code == 401
 
 
 # ---- 广告 ----

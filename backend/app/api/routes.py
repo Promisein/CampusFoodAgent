@@ -1,9 +1,12 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from app.api.auth import require_authenticated_user
 
 from app.models.schemas import (
     AdClickEventRequest,
+    AdSlotItem,
     AdSlotsResponse,
     FeedbackRequest,
     FavoriteRemoveRequest,
@@ -20,7 +23,7 @@ from app.models.schemas import (
     StoreSuggestResponse,
     TrackEventRequest,
 )
-from app.services.ad_repository import list_public_ad_slots, log_ad_click_event, seed_default_ads
+from app.services.ad_repository import list_public_ad_slots, log_ad_click_event
 from app.services.favorites_repository import add_favorite, list_favorites, remove_favorite
 from app.services.feedback_repository import save_feedback
 from app.services.hot_ranking import get_today_hot_rankings
@@ -98,8 +101,6 @@ def get_store_suggestions(keyword: str = Query(..., min_length=1)):
 @router.get("/rankings/today", response_model=HotRankingResponse)
 def get_today_rankings():
     """基于真实查询事件统计的热门排行。若无事件数据则回退评分排序。"""
-    seed_default_ads()  # 首次访问时初始化广告种子数据
-
     items_data = get_today_hot_rankings(limit=5)
     if items_data:
         items = []
@@ -154,27 +155,27 @@ def submit_feedback(req: FeedbackRequest):
 
 # ---- 收藏 ----
 @router.post("/favorites")
-def add_user_favorite(req: FavoriteRequest):
-    add_favorite(user_id=req.user_id, shop_id=req.shop_id, shop_name=req.shop_name)
+def add_user_favorite(req: FavoriteRequest, user_id: str = Depends(require_authenticated_user)):
+    add_favorite(user_id=user_id, shop_id=req.shop_id, shop_name=req.shop_name)
     return {"ok": True}
 
 
 @router.get("/favorites")
-def get_user_favorites(user_id: str = Query(..., min_length=1)):
+def get_user_favorites(user_id: str = Depends(require_authenticated_user)):
     return {"favorites": list_favorites(user_id)}
 
 
 @router.delete("/favorites")
-def remove_user_favorite(req: FavoriteRemoveRequest):
-    remove_favorite(user_id=req.user_id, shop_id=req.shop_id)
+def remove_user_favorite(req: FavoriteRemoveRequest, user_id: str = Depends(require_authenticated_user)):
+    remove_favorite(user_id=user_id, shop_id=req.shop_id)
     return {"ok": True}
 
 
 # ---- 广告 ----
 @router.get("/ads/slots", response_model=AdSlotsResponse)
 def get_ad_slots(limit: int = Query(default=5, ge=1, le=20)):
-    seed_default_ads()
-    return {"slots": list_public_ad_slots(limit=limit)}
+    raw = list_public_ad_slots(limit=limit)
+    return {"slots": [AdSlotItem(**s) for s in raw]}
 
 
 @router.post("/events/ad-click")

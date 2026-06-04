@@ -64,7 +64,7 @@ RECOMMEND_PROVIDER=deepseek_api
 # DeepSeek V4 API
 DEEPSEEK_API_KEY=your_deepseek_api_key_here
 DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-v4
+DEEPSEEK_MODEL=deepseek-chat
 DEEPSEEK_TIMEOUT_SECONDS=25
 DEEPSEEK_MAX_RETRIES=1
 DEEPSEEK_TEMPERATURE=0.3
@@ -111,7 +111,7 @@ def ask_deepseek(
     messages.append({"role": "user", "content": query})
 
     payload = {
-        "model": os.getenv("DEEPSEEK_MODEL", "deepseek-v4"),
+        "model": os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
         "messages": messages,
         "temperature": float(os.getenv("DEEPSEEK_TEMPERATURE", "0.3")),
         "max_tokens": int(os.getenv("DEEPSEEK_MAX_TOKENS", "1800")),
@@ -216,7 +216,7 @@ def _call_deepseek_api(system_prompt: str, user_prompt: str) -> str:
     """调 DeepSeek V4 API（非流式）"""
     endpoint = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/") + "/chat/completions"
     api_key = os.getenv("DEEPSEEK_API_KEY", "")
-    model = os.getenv("DEEPSEEK_MODEL", "deepseek-v4")
+    model = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
     temperature = float(os.getenv("DEEPSEEK_TEMPERATURE", "0.3"))
     max_tokens = int(os.getenv("DEEPSEEK_MAX_TOKENS", "1800"))
 

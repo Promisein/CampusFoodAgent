@@ -49,3 +49,10 @@ app.add_middleware(Utf8ResponseMiddleware)
 # ===== 挂载路由 =====
 app.include_router(router, prefix="/api/v1", tags=["mvp"])
 app.include_router(proxy_router, prefix="/api", tags=["deepseek-proxy"])
+
+
+# ===== 启动事件 =====
+@app.on_event("startup")
+def startup():
+    from app.services.ad_repository import seed_default_ads
+    seed_default_ads()

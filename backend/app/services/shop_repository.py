@@ -42,7 +42,7 @@ def _ensure_database():
                     reader = csv.DictReader(f)
                     for row in reader:
                         # 跳过 id 字段，让数据库自增
-                        values = {k: v for k, v in row.items() if k != "id"}
+                        values = {k: (v if v != "" else None) for k, v in row.items() if k != "id"}
                         columns = ", ".join(values.keys())
                         placeholders = ", ".join("?" * len(values))
                         conn.execute(

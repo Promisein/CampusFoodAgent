@@ -45,6 +45,8 @@ CampusFoodAgent/
 │   │       ├── deepseek_rerank_service.py   # Hybrid: rules + DeepSeek V4 rerank
 │   │       ├── auth_token_service.py   # Hand-rolled JWT (HS256)
 │   │       ├── wechat_auth_service.py  # WeChat jscode2session → JWT
+│   │       ├── password_service.py      # PBKDF2 HMAC-SHA256 密码哈希
+│   │       ├── account_service.py       # 邮箱用户 CRUD + 微信身份绑定
 │   │       ├── user_profile.py         # Behavioral user profile builder
 │   │       ├── query_intent_service.py # Category keyword extraction
 │   │       ├── usage_events.py      # Event tracking / analytics
@@ -63,8 +65,8 @@ CampusFoodAgent/
 │       ├── lib/ (api.ts, identity.ts)
 │       └── components/ (FeedbackPanel.tsx)
 ├── miniprogram/
-│   ├── pages/ (index, ads, profile, profile-detail, store-detail)
-│   └── utils/ (api.js, config.js, identity.js, analytics.js)
+│   ├── pages/index/ (index.js, index.wxml, index.wxss)
+│   └── utils/ (api.js, config.js, identity.js)
 ├── 复现计划/                        # 10-chapter build guide
 └── CLAUDE.md
 ```
@@ -113,7 +115,9 @@ python -m pytest tests/ -v
 python -m pytest tests/test_recommend.py -v   # Single test file
 
 # WeChat Mini Program
-# Open repo root in WeChat DevTools (project.config.json sets miniprogramRoot)
+# Open miniprogram/ in WeChat DevTools
+# 详情 → 本地设置 → 勾选"不校验合法域名"
+# 真机调试需要 HTTPS 公网域名或内网穿透
 ```
 
 ## Critical anti-hallucination mechanism

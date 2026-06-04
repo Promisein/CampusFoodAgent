@@ -8,6 +8,9 @@ DB_PATH = os.getenv("SQLITE_DB_PATH", str(Path(__file__).resolve().parents[2] / 
 
 
 def _connect() -> sqlite3.Connection:
+    from app.services import shop_repository
+
+    shop_repository._ensure_database()
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
@@ -78,7 +81,7 @@ def bind_anonymous_events_to_user(anonymous_id: str, user_id: str):
     conn = _connect()
     try:
         conn.execute(
-            "UPDATE usage_events SET user_id = ? WHERE anonymous_id = ? AND user_id IS NULL",
+            "UPDATE usage_events SET user_id = ? WHERE anonymous_id = ? AND (user_id IS NULL OR user_id = '')",
             (user_id, anonymous_id),
         )
         conn.commit()

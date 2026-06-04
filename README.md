@@ -859,3 +859,317 @@ backend/
 - **事件驱动排行榜**：从 `usage_events` 表 `GROUP BY shop_name ORDER BY COUNT(*)` 统计热门，有数据用真实统计否则回退评分排序
 - **广告种子数据**：首次访问时用 `COUNT(*) = 0` 检查 + 插入默认数据，双重检查保证不重复
 - **热门排行标签容错**：`shop["category"] or "美食"` 处理 NULL 字段，避免 Pydantic 校验失败
+
+### Chapter 7 代码审查修复
+
+以下三个问题在代码审查中被发现并已修复：
+
+1. **收藏接口加鉴权** — `/api/v1/favorites` 三个端点改为 `user_id: str = Depends(require_authenticated_user)`，从 JWT token 获取 userId 而非信任前端传来的 body/query 参数
+2. **seed_default_ads() 移至启动** — 从 `get_today_rankings()` 和 `get_ad_slots()` 中移除，改为 `@app.on_event("startup")` 启动事件
+3. **AdSlotsResponse 强类型** — `slots: list[dict]` → `slots: list[AdSlotItem]`，广告端点构造 `AdSlotItem(**s)` 返回
+
+### Chapter 8 — Next.js 前端
+- **Next.js App Router**：`"use client"` 标记客户端组件，`layout.tsx` 根布局，`page.tsx` 首页路由
+- **匿名优先身份体系**：前端生成 `anon_<ts36><random>` ID，localStorage 持久化，Token 过期前 30s 自动降级
+- **Blob UTF-8 编码**：`TextEncoder → Blob` 比直接传 JSON 字符串更可靠地保留中文
+- **防抖**：250ms debounce 减少输入时无效 API 请求
+- **骨架屏 Shimmer**：`linear-gradient + animation` 模拟内容加载占位
+
+### Chapter 9 — 微信小程序 MVP
+- **wx.request 封装**：小程序不支持 `fetch`，必须用 `wx.request`，用 Promise 包装回调式 API
+- **wx.StorageSync**：同步读写本地存储，适合启动时读取身份，类似 `localStorage`
+- **WXML 表达式限制**：模板不能 `.toFixed()` / `.includes()`，需在 JS 端预处理 view model
+- **View Model 模式**：`buildRecommendationViewModels()` 把原始数据 + UI 状态（收藏/加载）合并，WXML 纯展示
+- **微信登录闭环**：`wx.login() → /api/auth/wechat-login → JWT → wx.StorageSync`
+
+### Chapter 11 — 多端账号体系
+- **PBKDF2 HMAC-SHA256**：标准库 `hashlib.pbkdf2_hmac` + `hmac.compare_digest` 防时序攻击
+- **密码存储格式**：`pbkdf2_sha256$iterations$salt$hash`，自描述、可扩展
+- **双表账号设计**：`users`（统一身份）+ `wechat_identities`（微信绑定），比单表塞所有字段更易扩展
+- **user_id 命名空间**：`em_<uuid>` 和 `wx_<hash>` 前缀区分来源，不混用
+- **email UNIQUE 约束**：数据库层防止重复注册，比应用层检查更可靠
+- **登录后状态联动**：JWT 写入 → 加载收藏列表 → 卡片收藏按钮自动可用，一条链
+
+## Chapter 8 完成：Next.js 前端
+
+**目标**：用 Next.js 15 搭建 Web 前端，实现搜索框 → 推荐卡片 → 反馈收藏的完整交互链路。
+
+### 新建文件
+
+```
+frontend/
+├── package.json                    # Next.js 15 + React 18 + TypeScript
+├── next.config.mjs                 # reactStrictMode: true
+├── tsconfig.json                   # bundler mode, @/* path alias
+├── .env.local                      # NEXT_PUBLIC_API_BASE_URL
+├── .env.local.example
+└── src/
+    ├── app/
+    │   ├── globals.css             # 银杏主题色系 + 玻璃态卡片 + 骨架屏 + 响应式
+    │   ├── layout.tsx              # 根布局（zh-CN, metadata）
+    │   └── page.tsx                # 主页面（搜索/推荐/排行/登录/反馈）
+    ├── components/
+    │   └── FeedbackPanel.tsx       # 反馈弹窗（评分/菜品/标签/留言）
+    └── lib/
+        ├── api.ts                  # fetch 封装（Blob UTF-8, Bearer token, 业务 API）
+        └── identity.ts             # 匿名身份管理（localStorage, Token 过期检测）
+```
+
+### 前端功能清单
+
+| 功能 | 说明 |
+|------|------|
+| 搜索框 | textarea + Ctrl+Enter 提交，250ms 防抖店名自动补全 |
+| 快捷提示 | 4 个预设查询按钮，点击快速填充 |
+| 推荐卡片 | 玻璃态卡片展示店铺名称/匹配度/推荐理由/校区/价格 |
+| 骨架屏 | 加载时显示 shimmer 动画骨架占位 |
+| 热门排行 | 首页加载今日热门排行，点击可填充搜索 |
+| WeChat 登录 | 弹窗输入 wx.login() code → 换取 JWT → 升级身份 |
+| 反馈弹窗 | 星级评分 + 推荐菜品 + 场景/口味标签 + 留言 |
+| 匿名身份 | 首次访问生成 `anon_<ts36><random>` ID，localStorage 持久化 |
+| Token 管理 | 自动检测即将过期（提前 30s），过期降级匿名 |
+| UTF-8 保障 | Blob + TextEncoder 确保中文不被 fetch 破坏 |
+
+### 关键设计决策
+
+- **无页面路由**：整个 App 就是单页（`page.tsx`），所有交互通过组件显示/隐藏切换，不需要 Next.js Router
+- **Blob UTF-8 编码**：用 `new TextEncoder().encode(json)` 创建 Blob，显式设置 `charset=utf-8`，避免浏览器 fetch 破坏中文
+- **两阶段 API 地址解析**：先查 `NEXT_PUBLIC_API_BASE_URL` 环境变量，再检测 `localhost` 兜底，最后 fallback 到 Render 生产地址
+- **匿名优先 + 静默升级**：token 过期自动降级为匿名，不影响未登录用户的正常使用
+
+### 验证方法
+
+```bash
+cd frontend
+npm install
+npm run dev
+# 打开 http://localhost:3000
+
+# 确保后端在 8000 端口运行：
+cd backend
+uvicorn app.main:app --reload --port 8000
+```
+
+1. 搜索框输入"清水河，一个人吃清淡的"→ 点生成推荐 → 看到推荐卡片
+2. 点反馈按钮 → 弹出表单 → 提交后关闭
+3. 打开浏览器 DevTools → Network 标签 → 确认请求正确发送到 `localhost:8000`
+
+### 章末检查
+
+- [x] `next build` 编译成功（无 TypeScript 错误）
+- [x] 搜索框输入后能调用 API 获取推荐结果
+- [x] 快捷提示按钮能快速填充输入
+- [x] 加载中有骨架屏 loading 状态
+- [x] 错误时显示错误信息而非白屏
+- [x] 中文显示正常无乱码（Blob + TextEncoder + charset=utf-8）
+- [x] 反馈弹窗能打开并提交
+- [x] 热门排行在首页加载
+- [x] 店名自动补全下拉提示
+
+---
+
+## Chapter 9 完成：微信小程序 MVP 接入
+
+**目标**：在微信开发者工具中跑通小程序推荐主链路 —— 输入需求 → 调后端 → 展示推荐卡片。
+
+### 新建/修改文件
+
+```
+miniprogram/
+├── app.js                          # ★ 启动时初始化匿名身份
+├── app.json                        # ★ 导航栏标题/银杏主题色
+├── app.wxss                        # ★ CSS 变量全局主题
+├── utils/
+│   ├── util.js                     # （模板保留）
+│   ├── config.js                   # ★ 后端 API 地址（开发/生产）
+│   ├── identity.js                 # ★ 匿名身份管理（wx.StorageSync）
+│   └── api.js                      # ★ wx.request 封装 + 推荐/收藏/登录 API
+└── pages/
+    └── index/
+        ├── index.js                # ★ 首页逻辑（搜索/推荐/收藏/登录预留）
+        ├── index.wxml              # ★ 首页模板（搜索框/推荐卡片）
+        ├── index.wxss              # ★ 首页样式（银杏玻璃态）
+        └── index.json              # （模板保留）
+```
+
+### 小程序功能
+
+| 功能 | 说明 |
+|------|------|
+| 搜索框 | textarea 输入自然语言需求，自动撑高 |
+| 快捷提示 | 4 个预设 prompt 按钮，一键填充 |
+| 推荐卡片 | 店名/收藏按钮/匹配度/推荐理由/校区/人均价格 |
+| 收藏按钮 | ☆/★ 切换，状态通过 view model 驱动（`isFavorite`/`isFavLoading`），收藏后不整页重刷 |
+| 微信登录 | `wx.login()` → `/api/auth/wechat-login` → JWT 持久化 → 自动拉收藏列表 |
+| 匿名身份 | 首次启动生成 `anon_<ts36><random>`，`wx.StorageSync` 持久化 |
+| Token 管理 | 提前 30s 过期降级，`onLoad()` 有 token 才拉收藏，避免无效请求 |
+
+### 关键设计决策
+
+- **原生 JS 开发**：不引入 TypeScript / Taro / uni-app，保持小程序轻量
+- **匿名优先**：不强制登录，`app.js` 启动即初始化匿名 ID，后续所有埋点/推荐请求自动携带
+- **双端共用身份模型**：`identity.js` 与 Web 端 `identity.ts` 结构一致（`anonymousId / userId / accessToken / tokenExpiresAt`），登录后均可绑定匿名行为
+- **View Model 预处理**：`buildRecommendationViewModels()` 在 JS 端把推荐原始数据转为 WXML 友好的 view model（`shopId`/`isFavorite`/`isFavLoading`/`matchPercent`），WXML 模板只做纯展示，零字段计算
+- **收藏状态增量刷新**：`refreshRecommendationFavoriteState()` 收藏操作后只更新 `favIds` + 重建 view model，不重新请求推荐接口
+- **微信登录闭环**：`wx.login()` → `api.wechatLogin(code)` → `saveAuthenticatedIdentity()` → `loadFavorites()`，登录完直接同步收藏状态，Web 端的"粘贴 code"调试入口不再需要
+- **按需加载收藏**：`onLoad()` 先检查 `getAuthToken()`，有 token 才调 `/api/v1/favorites`，未登录不浪费请求
+
+### 运行方式
+
+```bash
+# 1. 启动后端
+cd backend
+uvicorn app.main:app --reload --port 8000
+
+# 2. 微信开发者工具 → 导入项目 → 选择 miniprogram/ 目录
+
+# 3. 开发阶段勾选：详情 → 本地设置 → 不校验合法域名
+
+# 4. 输入测试 query → 点生成推荐 → 看到卡片
+```
+
+### 章末检查
+
+- [x] 微信开发者工具能打开 `miniprogram/`
+- [x] 首页不再是模板 `Hello World`
+- [x] 首页能输入自然语言需求
+- [x] 能请求后端 `/api/recommend`
+- [x] 能展示推荐卡片（店名/理由/匹配度/校区/价格）
+- [x] 匿名 ID 能写入并从 `wx.StorageSync` 读取
+- [x] `deepseek_rerank` 模式下不会显示原始 JSON（`match_score` 预处理为字符串百分比）
+- [x] 收藏按钮已实现，未登录时有清晰 toast 提示
+- [x] `wx.login()` 完整登录闭环（获取 code → 换 JWT → 持久化 → 加载收藏）
+
+---
+
+## Chapter 11 完成：多端账号体系升级
+
+**目标**：Web 端支持邮箱注册/登录，小程序端继续微信登录，统一 JWT 鉴权，为后续账号绑定预留数据结构。
+
+### 新增文件
+
+```
+backend/
+├── app/services/
+│   ├── password_service.py       # ★ PBKDF2 HMAC-SHA256 密码哈希
+│   └── account_service.py        # ★ 邮箱用户 CRUD + 微信用户占位
+└── tests/
+    └── test_chapter11.py          # 15 个测试（密码/注册/登录/收藏鉴权）
+
+backend/data/schema.sql           # +2 表
+frontend/src/
+├── app/
+│   ├── page.tsx                  # + 登录/注册/登出面板
+│   └── globals.css               # + 登录状态/切换链接样式
+└── lib/
+    └── api.ts                    # + emailRegister/emailLogin
+```
+
+### 后端新增接口
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | `/api/auth/email-register` | 邮箱 + 密码注册，返回 JWT |
+| POST | `/api/auth/email-login` | 邮箱 + 密码登录，返回 JWT |
+
+### 新增数据表
+
+```sql
+users (id, email UNIQUE, password_hash, created_at, updated_at)
+wechat_identities (id, user_id FK→users, openid_hash UNIQUE, created_at)
+```
+
+### 关键设计决策
+
+- **PBKDF2 标准库实现**：`hashlib.pbkdf2_hmac("sha256", ...)` + `hmac.compare_digest()` 常量时间比较，存储格式 `pbkdf2_sha256$iterations$salt$hash`，无额外依赖
+- **user_id 命名空间**：邮箱用户 `em_<uuid16>`，微信用户 `wx_<sha256[:24]>`，通过前缀区分来源
+- **双表设计**：`users` 作为统一身份主体，`wechat_identities` 存微信绑定关系，后续加 QQ/手机号登录只需加新关联表
+- **微信登录同步写入**：`wechat_auth_service.py` 内部调用 `ensure_wechat_user()` + `save_wechat_identity()` 写入 users 表和 wechat_identities 表，为 Phase 2 账号绑定做准备
+- **密码不存明文**：全程只有哈希，即使数据库泄露也无法还原密码
+- **Web 登录面板**：登录/注册切换弹窗，Enter 提交，登录后自动加载收藏列表，登出清空状态
+
+### Phase 1 vs Phase 2
+
+| | Phase 1（已完成） | Phase 2（规划） |
+|---|---|---|
+| Web 邮箱注册/登录 | 完成 | — |
+| JWT 统一鉴权 | 完成 | — |
+| 密码哈希存储 | 完成 | — |
+| 微信用户写入 users | 幂等占位 | — |
+| wechat_identities 记录 | 写入 openid_hash | — |
+| 微信绑定邮箱 | — | `/api/auth/bind-email` |
+| 数据合并 | — | 收藏/反馈/行为归属迁移 |
+
+### 测试覆盖（15 tests）
+
+| 测试类 | 覆盖内容 |
+|--------|----------|
+| TestPasswordService (5) | 哈希验证回环、错误密码拒绝、不同盐值、坏格式、空密码 |
+| TestEmailRegister (4) | 注册成功、重复邮箱 409、短密码 422、无效邮箱 422 |
+| TestEmailLogin (4) | 登录成功、错误密码 401、不存在用户 401、空字段 422 |
+| TestAuthWithEmailToken (2) | 邮箱 token 访问 auth/me、邮箱 token 收藏店铺 |
+
+---
+
+## Chapter 12 完成：Web 个人中心
+
+**目标**：在 Next.js Web 前端新增 `/profile` 个人中心页面，展示用户信息与收藏列表，支持取消收藏和退出登录。
+
+### 新增/修改文件
+
+```
+frontend/src/
+├── app/
+│   ├── profile/
+│   │   └── page.tsx              # ★ 个人中心页面（3 种状态）
+│   ├── page.tsx                  # + 个人中心入口链接 + logoutIdentity 复用
+│   └── globals.css               # + 个人中心/收藏列表/空状态样式
+└── lib/
+    ├── identity.ts               # + logoutIdentity() 统一退出登录
+    └── api.ts                    # + getMe() 验证 JWT token
+```
+
+### 页面三种状态
+
+| 状态 | 触发条件 | 展示内容 |
+|------|----------|----------|
+| 加载中 | 进入页面后请求 `/api/auth/me` | 骨架屏 loading |
+| 未登录 | 无 token 或 token 失效 | 匿名提示 + 去登录按钮 + 返回推荐页 |
+| 已登录 | token 有效 | userId + 账号类型 + 收藏列表 + 退出登录 |
+
+### 核心交互
+
+- **token 校验**：进入 `/profile` 先调 `GET /api/auth/me`，不信任 localStorage
+- **token 失效处理**：校验失败自动调用 `logoutIdentity()` 清理登录态
+- **收藏列表**：调 `GET /api/v1/favorites`，展示店名/收藏日期/shop_id
+- **取消收藏**：调 `DELETE /api/v1/favorites`，成功后本地移除该项，失败保留原列表并提示
+- **退出登录**：复用 `logoutIdentity()` 清除 localStorage + 重置页面状态
+- **空收藏**：显示"还没有收藏饭馆" + "去首页推荐"按钮
+- **页面导航**：首页 composer footer 新增"个人中心"入口，个人中心有"返回推荐页"链接
+
+### 关键设计决策
+
+- **不信任前端 localStorage**：每次进入 `/profile` 都调 `/api/auth/me` 验证 token 有效性，防止展示"假登录"状态
+- **复用已有接口**：不新增后端接口，只消费已有的 `/api/auth/me`、`/api/v1/favorites`（GET/DELETE）
+- **账号类型识别**：通过 userId 前缀自动判断（`em_` = 邮箱账号，`wx_` = 微信账号）
+- **统一登出**：`logoutIdentity()` 同时被首页和个人中心复用，保证登出行为一致
+
+### 章末检查清单
+
+- [x] 打开 `/profile` 不报错
+- [x] 未登录访问 `/profile` 显示登录引导
+- [x] 邮箱登录后访问 `/profile` 能看到自己的 `userId`
+- [x] 收藏饭馆后访问 `/profile` 能看到收藏列表
+- [x] 在 `/profile` 取消收藏后，列表会更新
+- [x] token 失效时，不会继续展示"已登录"假状态
+- [x] 首页可以进入个人中心，个人中心可以返回首页
+- [x] `next build` 编译成功，3 个路由全部正常
+
+### 本章知识点
+
+- Next.js App Router 页面拆分（`/` + `/profile`）
+- 前端登录态恢复与 JWT token 校验
+- 受保护接口调用（`getMe` / `fetchFavorites` / `removeFavorite`）
+- 个人中心页面状态设计（loading / not-logged-in / logged-in）
+- 空状态、错误状态、加载状态处理
+- 用户收藏数据的前后端闭环

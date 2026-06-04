@@ -113,3 +113,21 @@ CREATE TABLE IF NOT EXISTS ad_settings (
     key   TEXT PRIMARY KEY,
     value TEXT
 );
+
+-- 系统用户（邮箱用户 + 微信用户）
+CREATE TABLE IF NOT EXISTS users (
+    id              TEXT PRIMARY KEY,
+    email           TEXT UNIQUE,
+    password_hash   TEXT,
+    created_at      TEXT DEFAULT (datetime('now')),
+    updated_at      TEXT DEFAULT (datetime('now'))
+);
+
+-- 微信身份与系统用户的绑定关系
+CREATE TABLE IF NOT EXISTS wechat_identities (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id         TEXT NOT NULL,
+    openid_hash     TEXT NOT NULL UNIQUE,
+    created_at      TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
