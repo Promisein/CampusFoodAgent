@@ -45,6 +45,6 @@ def dataset_status():
 def recommend(request: RecommendationRequest):
     return RecommendationResponse(
         version="v2",
-        engine="fixture_geo_keyword_rag",
-        recommendations=recommend_restaurants(request),
+        engine="processed_geo_keyword_evidence",
+        recommendations=recommend_restaurants(request, dataset_repository),
     )

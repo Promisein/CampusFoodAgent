@@ -7,7 +7,7 @@ class RecommendationRequest(BaseModel):
     longitude: float
     radius_km: float = Field(default=3, gt=0, le=50)
     max_price_level: int = Field(default=4, ge=1, le=4)
-    city: str = Field(default="Philadelphia", min_length=1)
+    city: str = Field(default="Tampa", min_length=1)
     top_k: int = Field(default=5, ge=1, le=20)
 
 
