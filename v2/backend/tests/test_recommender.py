@@ -144,6 +144,34 @@ def test_processed_recommend_searches_attribute_values(tmp_path):
     assert "matched query terms: quiet" in results[0].reasons
 
 
+def test_processed_recommend_keeps_stable_order_and_business_specific_evidence(tmp_path):
+    repository = _processed_repository(
+        tmp_path,
+        [
+            _processed_business("business-b", name="Same Cafe"),
+            _processed_business("business-a", name="Same Cafe"),
+        ],
+        [
+            _processed_review("review-b", "business-b"),
+            _processed_review("review-a", "business-a"),
+        ],
+    )
+    request = RecommendationRequest(
+        query="coffee",
+        latitude=27.9506,
+        longitude=-82.4572,
+        radius_km=3,
+        max_price_level=2,
+        city="Tampa",
+        top_k=2,
+    )
+
+    results = recommend_restaurants(request, repository)
+
+    assert [item.business_id for item in results] == ["business-a", "business-b"]
+    assert [item.evidence[0].document_id for item in results] == ["review-a", "review-b"]
+
+
 def test_recommend_filters_by_city_radius_price_and_category():
     request = RecommendationRequest(
         query="quiet pizza dinner",

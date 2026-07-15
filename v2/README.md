@@ -4,7 +4,7 @@
 >
 > 重构方案依据日期：2026年6月18日
 >
-> 当前版本：`v0.2.0`（可运行的后端与数据整理基线）
+> 当前版本：`v0.2.0`（Tampa processed 数据推荐 API 基线）
 
 CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数据重构的城市餐饮推荐项目。项目目标是把地理硬约束、个性化推荐、证据检索和受控 Agent 编排组合成可运行、可解释、可追溯的餐饮决策系统。
 
@@ -24,6 +24,7 @@ CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数�
 - [开发路线图](#开发路线图)
 - [双项目关系](#双项目关系)
 - [可信度与面试表述](#可信度与面试表述)
+- [阶段文档](#阶段文档)
 - [方案来源](#方案来源)
 
 ## 项目定位
@@ -67,9 +68,11 @@ CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数�
 - 返回推荐理由及最多两条代表评论证据；
 - Yelp 原始 Business/Review 的单城市整理脚本；
 - `businesses.jsonl`、`interactions.jsonl`、`representative_reviews.jsonl`、城市统计与 manifest 输出；
-- 9 个 API、推荐逻辑和数据整理自动化测试。
+- processed 数据读取、字段校验和进程内缓存；
+- Tampa processed 商户已接入默认推荐 API，结果 ID 和评论证据可追溯；
+- 22 个 API、推荐、数据读取、数据整理和集成自动化测试。
 
-### 已生成但尚未接入在线 API
+### 当前在线 processed 数据
 
 本地处理结果已经生成 Tampa 子集：
 
@@ -81,7 +84,7 @@ CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数�
 | Review 映射交互 | 100,000 |
 | 代表评论证据 | 29,092 |
 
-这些数字来自 `backend/data/processed/data_manifest.json`，生成配置为 Tampa, FL、每个商户最多 40 条交互、每个商户最多 8 条代表评论。当前 `/api/v2/recommend` 仍使用 Philadelphia fixture，不能把上述真实数据子集表述成“已经接入在线推荐”。
+这些数字来自 `backend/data/processed/data_manifest.json`，生成配置为 Tampa, FL、每个商户最多 40 条交互、每个商户最多 8 条代表评论。`/api/v2/dataset/status` 从 manifest 读取状态，`/api/v2/recommend` 默认读取 processed Business 和 RepresentativeReview。5 家 Philadelphia fixture 仅保留用于小数据回归和故障定位，不参与默认在线请求。
 
 ### 规划中
 
@@ -101,11 +104,13 @@ CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数�
 ```text
 v2/
 ├── README.md
+├── docs/                          # 数据说明、阶段计划和实施记录
 └── backend/
     ├── app/
     │   ├── main.py                  # FastAPI v2 路由
     │   ├── models.py                # Pydantic API 模型
-    │   ├── recommender.py           # fixture 硬过滤、评分和证据返回
+    │   ├── data_repository.py       # processed 数据读取、校验和缓存
+    │   ├── recommender.py           # 硬过滤、规则评分和证据返回
     │   └── data_pipeline/
     │       └── curate_yelp.py       # Yelp 单城市数据整理
     ├── data/
@@ -159,7 +164,7 @@ Set-Location .\v2\backend
 & $python -m pytest tests/ -v
 ```
 
-当前预期结果：收集并通过 9 个测试。
+当前预期结果：收集并通过 22 个测试。
 
 ## API 使用
 
@@ -168,19 +173,19 @@ Set-Location .\v2\backend
 | 方法 | 路径 | 当前作用 |
 | --- | --- | --- |
 | `GET` | `/api/v2/health` | 返回服务、项目和 v2 版本状态 |
-| `GET` | `/api/v2/dataset/status` | 返回当前在线 fixture 的数据状态 |
+| `GET` | `/api/v2/dataset/status` | 返回 Tampa processed manifest 数据状态 |
 | `POST` | `/api/v2/recommend` | 执行硬过滤、规则评分并返回证据 |
 
 ### 推荐请求字段
 
 | 字段 | 类型 | 约束/默认值 | 说明 |
 | --- | --- | --- | --- |
-| `query` | string | 必填，至少 1 个字符 | 当前按空格分词，适合英文 fixture 查询 |
+| `query` | string | 必填，至少 1 个字符 | 当前按空格分词，适合 Yelp 英文名称、类别、属性和评论查询 |
 | `latitude` | float | 必填 | 请求位置纬度 |
 | `longitude` | float | 必填 | 请求位置经度 |
 | `radius_km` | float | 默认 3，范围 `(0, 50]` | 最大搜索半径 |
 | `max_price_level` | int | 默认 4，范围 `1–4` | 最高价格等级 |
-| `city` | string | 默认 `Philadelphia` | 当前 fixture 城市 |
+| `city` | string | 默认 `Tampa` | 当前 processed 数据城市 |
 | `top_k` | int | 默认 5，范围 `1–20` | 返回数量 |
 
 ### PowerShell 请求示例
@@ -189,7 +194,7 @@ Set-Location .\v2\backend
 Invoke-RestMethod -Method Post `
   -Uri http://localhost:8100/api/v2/recommend `
   -ContentType application/json `
-  -Body '{"query":"quiet pizza dinner","latitude":39.9526,"longitude":-75.1652,"radius_km":3,"max_price_level":2,"city":"Philadelphia","top_k":2}'
+  -Body '{"query":"coffee breakfast","latitude":27.9506,"longitude":-82.4572,"radius_km":5,"max_price_level":2,"city":"Tampa","top_k":5}'
 ```
 
 每个推荐结果包含：
@@ -199,18 +204,20 @@ business_id, name, city, categories, price_level,
 rating, review_count, distance_km, score, reasons, evidence
 ```
 
-`evidence` 当前来自 fixture 中的代表评论，包含 `document_id`、`source` 和原始文本。
+`evidence` 当前来自对应 processed 商家的代表评论，包含可追溯的 `document_id`、`source` 和原始文本。价格缺失的商家会被排除，因为无法证明其满足预算上限。
 
 ## 当前推荐链路
 
 ```mermaid
 flowchart LR
-    A["RecommendationRequest"] --> B["城市/营业/价格过滤"]
-    B --> C["Haversine 半径过滤"]
-    C --> D["查询词匹配"]
-    D --> E["结构化加权评分"]
-    E --> F["稳定排序与 Top K"]
-    F --> G["理由与代表评论证据"]
+    A["Tampa processed 数据"] --> B["数据读取、校验与缓存"]
+    B --> C["RecommendationRequest"]
+    C --> D["城市/营业/价格过滤"]
+    D --> E["Haversine 半径过滤"]
+    E --> F["查询词匹配"]
+    F --> G["结构化加权评分"]
+    G --> H["稳定排序与 Top K"]
+    H --> I["理由与代表评论证据"]
 ```
 
 当前评分公式为：
@@ -488,13 +495,16 @@ reason_business_ids, model_or_index_version
 
 ### 当前自动化测试
 
-当前 9 个测试覆盖：
+当前 22 个测试覆盖：
 
 - 健康检查、数据集状态与推荐 API；
 - 城市、半径、价格和营业状态过滤，以及数据整理阶段的餐饮类别筛选；
 - 空候选行为、稳定排序和证据返回；
 - 最密集城市选择、商户筛选和 Review 映射；
-- manifest 对保留及排除数据源的记录。
+- manifest 对保留及排除数据源的记录；
+- processed 文件缺失、schema 缺失和缓存行为；
+- manifest 数量、推荐商家 ID 与评论证据 ID 的端到端可追溯性；
+- fixture 文件存在但不参与默认在线推荐。
 
 ## 开发路线图
 
@@ -502,7 +512,7 @@ reason_business_ids, model_or_index_version
 
 | 阶段 | CampusFoodAgent v2 任务 | 验收产物 | 当前状态 |
 | --- | --- | --- | --- |
-| 第 5 周：真实数据替换 | Yelp 版本、许可、单城市筛选、统一 schema、时间切分 | manifest、过滤统计、可追溯 ID | 数据整理首版已完成；在线接入未完成 |
+| 第 5 周：真实数据替换 | Yelp 版本、许可、单城市筛选、统一 schema、时间切分 | manifest、过滤统计、可追溯 ID | 数据整理与在线接入已完成；时间切分规划中 |
 | 第 6 周：画像与推荐 | `as_of_time` 画像、四路召回、RRF、LightGBM | 推荐主实验、消融、冷用户分群 | 规划中 |
 | 第 7 周：RAG 与工具 | 三类文档、混合检索、六个工具、白名单与降级 | RAG 评测、工具回归、证据包 | 规划中 |
 | 第 8 周：反馈与展示 | 五类事件、演示画像、故障注入、延迟测试、前端 | 三分钟演示、报告和完整 README | 规划中 |
@@ -595,6 +605,19 @@ flowchart LR
 - 推荐理由关联有效商户属性或评论证据；
 - LLM 或索引故障时仍能返回合法、结构化的降级结果；
 - README 能让新环境复现核心数据、测试和评估流程。
+
+## 阶段文档
+
+以下文档均位于 `v2/docs`，日期为2026年7月15日：
+
+| 文档 | 内容 |
+| --- | --- |
+| [01-数据集说明](docs/01-数据集说明.md) | processed 数据来源、规模、字段、用途和适用边界 |
+| [02-下一阶段实施计划](docs/02-下一阶段实施计划.md) | 本次四段计划、验收标准和完成状态 |
+| [03-第一段实施记录](docs/03-第一段-真实数据读取层实施记录.md) | processed 数据读取、校验和缓存 |
+| [04-第二段实施记录](docs/04-第二段-数据状态接口实施记录.md) | manifest 数据状态 API |
+| [05-第三段实施记录](docs/05-第三段-真实推荐接口实施记录.md) | Tampa 推荐 API 和评论证据接入 |
+| [06-第四段实施记录](docs/06-第四段-集成收尾实施记录.md) | 集成测试、手工验证和文档收尾 |
 
 ## 文档维护规则
 
