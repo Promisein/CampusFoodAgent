@@ -1,0 +1,56 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.python-version
+
+# ---------- Node / Next.js ----------
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- 环境变量与密钥 ----------
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.local.example
+
+# ---------- IDE / 编辑器 / 本地配置 ----------
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ---------- 本地数据与派生产物（体积大或受 Yelp 许可限制，不提交）----------
+v2/backend/data/archive/
+v2/backend/data/processed/
+v2/backend/data/derived/
+
+# ---------- 本地内部笔记与 AI 助手配置（不入库）----------
+docs/superpowers/
+v1/项目完成逻辑.txt
+v1/AGENTS.md
+v1/CLAUDE.md
+
+# ---------- 临时文件与本地备份 ----------
+_tmp_pt/
+*.log
+.git.bak/

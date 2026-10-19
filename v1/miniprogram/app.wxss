@@ -1,0 +1,18 @@
+/** 全局主题色 —— 银杏色系 **/
+page {
+  --gold: #c9a96e;
+  --gold-light: #f7f2e6;
+  --gold-dark: #a8834a;
+  --beige: #faf6f0;
+  --brown: #7b5b2a;
+  --text: #3d3d3d;
+  --text-light: #8c96a8;
+  --text-lighter: #b0b8c4;
+
+  background: linear-gradient(135deg, var(--beige), var(--gold-light));
+  font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  color: var(--text);
+  font-size: 28rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}

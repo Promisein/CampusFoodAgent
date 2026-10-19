@@ -1,0 +1,108 @@
+{
+  "businesses": [
+    {
+      "business_id": "v2_yelp_biz_001",
+      "name": "Liberty Slice",
+      "city": "Philadelphia",
+      "state": "PA",
+      "latitude": 39.9509,
+      "longitude": -75.1661,
+      "categories": ["Restaurants", "Pizza", "Italian"],
+      "attributes": ["quiet", "dinner", "casual"],
+      "price_level": 2,
+      "rating": 4.6,
+      "review_count": 218,
+      "is_open": true,
+      "representative_reviews": [
+        {
+          "review_id": "v2_review_001",
+          "text": "Quiet dinner spot with crisp pizza and enough seating for a small group."
+        },
+        {
+          "review_id": "v2_review_002",
+          "text": "Good value slices near Center City, especially for a casual evening meal."
+        }
+      ]
+    },
+    {
+      "business_id": "v2_yelp_biz_002",
+      "name": "Walnut Noodle Bar",
+      "city": "Philadelphia",
+      "state": "PA",
+      "latitude": 39.9534,
+      "longitude": -75.1702,
+      "categories": ["Restaurants", "Noodles", "Asian Fusion"],
+      "attributes": ["quick", "lunch", "spicy"],
+      "price_level": 2,
+      "rating": 4.4,
+      "review_count": 151,
+      "is_open": true,
+      "representative_reviews": [
+        {
+          "review_id": "v2_review_003",
+          "text": "Fast noodle bowls with a spicy broth option and consistent lunch service."
+        }
+      ]
+    },
+    {
+      "business_id": "v2_yelp_biz_003",
+      "name": "Market Garden Cafe",
+      "city": "Philadelphia",
+      "state": "PA",
+      "latitude": 39.9518,
+      "longitude": -75.1580,
+      "categories": ["Restaurants", "Cafe", "Vegetarian"],
+      "attributes": ["vegetarian", "quiet", "brunch"],
+      "price_level": 1,
+      "rating": 4.2,
+      "review_count": 89,
+      "is_open": true,
+      "representative_reviews": [
+        {
+          "review_id": "v2_review_004",
+          "text": "Vegetarian-friendly cafe with calm tables and affordable breakfast plates."
+        }
+      ]
+    },
+    {
+      "business_id": "v2_yelp_biz_closed",
+      "name": "Closed Sushi Counter",
+      "city": "Philadelphia",
+      "state": "PA",
+      "latitude": 39.9520,
+      "longitude": -75.1655,
+      "categories": ["Restaurants", "Sushi"],
+      "attributes": ["sushi", "dinner"],
+      "price_level": 3,
+      "rating": 4.9,
+      "review_count": 300,
+      "is_open": false,
+      "representative_reviews": [
+        {
+          "review_id": "v2_review_005",
+          "text": "Great sushi, but this business is marked closed in the fixture."
+        }
+      ]
+    },
+    {
+      "business_id": "v2_yelp_biz_other_city",
+      "name": "Tampa Bay Tacos",
+      "city": "Tampa",
+      "state": "FL",
+      "latitude": 27.9506,
+      "longitude": -82.4572,
+      "categories": ["Restaurants", "Tacos"],
+      "attributes": ["quick", "lunch"],
+      "price_level": 1,
+      "rating": 4.8,
+      "review_count": 240,
+      "is_open": true,
+      "representative_reviews": [
+        {
+          "review_id": "v2_review_006",
+          "text": "Excellent tacos, intentionally out of the requested city."
+        }
+      ]
+    }
+  ]
+}

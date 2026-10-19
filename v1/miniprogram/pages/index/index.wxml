@@ -1,0 +1,82 @@
+<!-- pages/index/index.wxml -->
+<view class="page">
+  <!-- 标题 -->
+  <view class="hero">
+    <text class="hero-title">成电吃什么</text>
+    <text class="hero-sub">校园餐饮 AI 推荐助手</text>
+  </view>
+
+  <!-- 搜索框 -->
+  <view class="composer">
+    <textarea
+      class="query-input"
+      value="{{query}}"
+      placeholder="说说你的需求，比如：清水河，预算25，一个人想吃清淡的..."
+      bindinput="onQueryInput"
+      auto-height
+      maxlength="-1"
+    />
+    <button class="gold-btn" bindtap="onSubmit" loading="{{loading}}" disabled="{{loading}}">
+      {{loading ? '思考中...' : '生成推荐'}}
+    </button>
+
+    <!-- 快捷提示 -->
+    <view class="quick-prompts">
+      <view class="ghost-btn" bindtap="onQuickPrompt" data-text="清水河，预算25，一个人想吃清淡的">一个人吃清淡</view>
+      <view class="ghost-btn" bindtap="onQuickPrompt" data-text="沙河，同学聚餐，吃辣的">聚餐吃辣</view>
+      <view class="ghost-btn" bindtap="onQuickPrompt" data-text="西门附近，想吃面，便宜点的">便宜吃面</view>
+      <view class="ghost-btn" bindtap="onQuickPrompt" data-text="晚上吃夜宵，有什么推荐？">晚上夜宵</view>
+    </view>
+
+    <!-- 底部操作栏 -->
+    <view class="composer-footer">
+      <button class="ghost-btn login-hint" bindtap="onLoginTap">微信登录</button>
+      <!-- 登录提示 toast -->
+      <view class="login-toast" wx:if="{{showLoginTip}}">
+        <text>请先微信登录后再收藏</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error-card" wx:if="{{error}}">{{error}}</view>
+
+  <!-- AI 文本回答 -->
+  <view class="answer-card" wx:if="{{answer}}">{{answer}}</view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-hint">
+    <text>AI 正在为你挑选...</text>
+  </view>
+
+  <!-- 推荐卡片 -->
+  <view class="results-panel" wx:if="{{!loading && recommendations.length > 0}}">
+    <view class="shop-card" wx:for="{{recommendations}}" wx:key="name">
+      <view class="shop-header">
+        <view class="shop-title-row">
+          <text
+            class="fav-star {{item.isFavLoading ? 'loading' : ''}}"
+            data-shop-id="{{item.shopId}}"
+            data-shop-name="{{item.shopName}}"
+            bindtap="onToggleFavorite"
+          >{{item.isFavorite ? '★' : '☆'}}</text>
+          <text class="shop-name">{{item.name}}</text>
+        </view>
+        <text class="score-badge" wx:if="{{item.matchPercent}}">{{item.matchPercent}}</text>
+      </view>
+
+      <text class="reason">{{item.reason}}</text>
+
+      <view class="meta-row">
+        <text class="tag" wx:if="{{item.campus}}">{{item.campus}}</text>
+        <text class="tag" wx:if="{{item.area}}">{{item.area}}</text>
+        <text class="tag" wx:if="{{item.avg_price}}">人均 ¥{{item.avg_price}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空态 -->
+  <view class="empty-hint" wx:if="{{!loading && !error && !answer && recommendations.length === 0}}">
+    <text>输入需求，AI 帮你选</text>
+  </view>
+</view>

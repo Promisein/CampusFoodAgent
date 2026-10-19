@@ -1,0 +1,229 @@
+/* pages/index/index.wxss */
+
+/* ===== 页面容器 ===== */
+.page {
+  padding: 32rpx 24rpx 120rpx;
+  max-width: 700rpx;
+  margin: 0 auto;
+}
+
+/* ===== Hero ===== */
+.hero {
+  text-align: center;
+  padding: 40rpx 0 24rpx;
+}
+
+.hero-title {
+  font-size: 56rpx;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a8834a, #7b5b2a);
+  -webkit-background-clip: text;
+  color: transparent;
+  letter-spacing: 4rpx;
+}
+
+.hero-sub {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #8c96a8;
+}
+
+/* ===== Composer（搜索区） ===== */
+.composer {
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 24rpx;
+  border: 1rpx solid rgba(201, 169, 110, 0.18);
+  padding: 28rpx;
+  margin-top: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
+.query-input {
+  width: 100%;
+  min-height: 140rpx;
+  border: 1rpx solid #e8e2d6;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+  background: rgba(255, 255, 255, 0.6);
+  box-sizing: border-box;
+}
+
+/* ===== 按钮 ===== */
+.gold-btn {
+  width: 100%;
+  margin-top: 20rpx;
+  background: linear-gradient(135deg, #c9a96e, #a8834a);
+  color: #fff;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  border: none;
+}
+
+.gold-btn[disabled] {
+  opacity: 0.6;
+}
+
+.quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.ghost-btn {
+  background: none;
+  border: 1rpx solid #e0d8c8;
+  border-radius: 32rpx;
+  padding: 10rpx 24rpx;
+  font-size: 24rpx;
+  color: #8c96a8;
+  line-height: 1.4;
+}
+
+.composer-footer {
+  display: flex;
+  align-items: center;
+  margin-top: 24rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f0ebe0;
+  position: relative;
+}
+
+.login-hint {
+  padding: 10rpx 28rpx;
+  font-size: 24rpx;
+}
+
+.login-toast {
+  position: absolute;
+  left: 160rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #fff9db;
+  border: 1rpx dashed #ecc94b;
+  border-radius: 8rpx;
+  padding: 8rpx 20rpx;
+  font-size: 22rpx;
+  color: #b7791f;
+  white-space: nowrap;
+}
+
+/* ===== 错误 ===== */
+.error-card {
+  margin-top: 24rpx;
+  padding: 20rpx 28rpx;
+  background: #fff5f5;
+  border: 1rpx solid #fed7d7;
+  border-radius: 12rpx;
+  color: #c53030;
+  font-size: 26rpx;
+}
+
+/* ===== AI 回答 ===== */
+.answer-card {
+  margin-top: 24rpx;
+  padding: 24rpx;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 24rpx;
+  border: 1rpx solid rgba(201, 169, 110, 0.18);
+  font-size: 28rpx;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+/* ===== 加载 ===== */
+.loading-hint {
+  margin-top: 48rpx;
+  text-align: center;
+  color: #8c96a8;
+  font-size: 26rpx;
+}
+
+/* ===== 推荐卡片 ===== */
+.results-panel {
+  margin-top: 32rpx;
+}
+
+.shop-card {
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 24rpx;
+  border: 1rpx solid rgba(201, 169, 110, 0.18);
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.shop-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex: 1;
+}
+
+.fav-star {
+  font-size: 40rpx;
+  color: #d0d0d0;
+  padding: 0 4rpx;
+  transition: color 0.15s;
+}
+
+.fav-star.loading {
+  opacity: 0.4;
+}
+
+.shop-name {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #3d3d3d;
+}
+
+.score-badge {
+  background: linear-gradient(135deg, #c9a96e, #a8834a);
+  color: #fff;
+  padding: 4rpx 16rpx;
+  border-radius: 24rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.reason {
+  display: block;
+  font-size: 26rpx;
+  color: #8c96a8;
+  line-height: 1.6;
+  margin-bottom: 16rpx;
+}
+
+.meta-row {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.tag {
+  display: inline-block;
+  background: #f7f2e6;
+  color: #7b5b2a;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+}
+
+/* ===== 空态 ===== */
+.empty-hint {
+  margin-top: 80rpx;
+  text-align: center;
+  color: #b0b8c4;
+  font-size: 28rpx;
+}
