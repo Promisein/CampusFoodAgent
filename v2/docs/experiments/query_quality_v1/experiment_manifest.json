@@ -1,0 +1,71 @@
+{
+  "code_sha256": {
+    "app/__init__.py": "0ec259041b04ad3071370a844a60528afd4a5e56a65bf18ab129936b4018b030",
+    "app/artifact_io.py": "abdf1be79f645662bd956273175d8427e7e181c5704bd9722248b2a41ebad888",
+    "app/data_pipeline/__init__.py": "170f4f1f72b54282cc23bd2dcb9c06d420f6800588e721ed76fbdb0ba10b9e2d",
+    "app/data_pipeline/analyze_interactions.py": "71c5f6f77ac4a7c1b304a407ecfd134dc586beaea7e3baa45cfb402ec4dd3671",
+    "app/data_pipeline/curate_yelp.py": "e4fa802f044b631189c364c8567c5c5e387a1f5a7a4a96908ed3b0e61d5b5917",
+    "app/data_pipeline/full_city_corpus.py": "da5c23df1f4e9f44c3c2323c4f6c498080e6d941c2563179ae253accec0e5262",
+    "app/data_pipeline/split_interactions.py": "898e9f6121da616191382287957c4cce24f8bee7b6d2ffa04d7dc02189552622",
+    "app/data_repository.py": "96ac2ba0026dcb31e4a83e69a7574a2e6f6997e17ba2ee2deec7c66f0c2cb100",
+    "app/demo.py": "450f2aaa5c3bcf0868dc257f491ae4b4ac4d6cb25cab038a63f898349fc9bc81",
+    "app/evaluation/__init__.py": "7395643801146e8d005dd6d0e34905eadc923f01e552782fff1f9bc6d3707b00",
+    "app/evaluation/baseline_replay.py": "6aa8f02ce5fa50c8042a0ece1e678f4bb9db0bfdd8cde5494d25397c91e4d96c",
+    "app/evaluation/content_study.py": "c151e041821ed07b7c412273d20adeea294f8f34314138c3387273f09e6e5af6",
+    "app/evaluation/fusion_study.py": "e4f0369aa55c8de09c555f70920a29091637a45c3000d1a0344f837eddf3c32e",
+    "app/evaluation/query_quality.py": "7d73ff527ccb2a701c7103fc784a622cb39d2e37ec404801f57de7f69324af10",
+    "app/evaluation/query_study.py": "c32a02ed7a20ac1b7010981f3d4e5ebb30be00af093658372e3bd4b307893e60",
+    "app/evaluation/rag_study.py": "d86bd9858854437feeaa00fa0528fa17621a33fd7490782b82467bde3110faef",
+    "app/evaluation/ranking_study.py": "ecc6dc01ae9c834d8cd35581bedd1866ed490069129a2184298679a0a2af6bee",
+    "app/events.py": "7a9a3f92b4d513cfd27e1a487d609646e1ede2bd3cfd55d55f84ffc4c39c78ae",
+    "app/evidence.py": "b26dd5e610d7c65203aff78349ecc40215c45d6c30b7a19077afd0f841faa0ec",
+    "app/main.py": "e0f4ea6223eb89729447ab17db18dd627fd2b2180c50e72bcb763ffc1e8ad9fe",
+    "app/models.py": "3567c68db6e799ebc7a51f7463aa18ce97cc04c77b04b3b31570c70b8565929c",
+    "app/personalized.py": "2af3123ed63813aa86c118040f1673099bb08cebf9876445643a5dc4b843e4c0",
+    "app/profiles/__init__.py": "d2f98c0b500849f44de11a5bd4ea2099b3335f7dc0c5549ac34a9a6f8d302715",
+    "app/profiles/build_profiles.py": "7ad4c3fa333bffd26b3672bae1127e7841fc7e559a87c1847726e3a60930e5b7",
+    "app/profiles/profile_repository.py": "7f77978dd256ab8768310d7d0f76388ede254c899b4459f515d8960f691b7b4b",
+    "app/query_intent.py": "430a30f8d65042c9d75335f0091d7367b982d3862d541363ce3aa82a383fe2ec",
+    "app/rag/__init__.py": "9203585b935d939cecf01e8c6e32b0ba4fc940e4d7d18d053baace40bd86f971",
+    "app/rag/check.py": "b6dd35c657170f080d4af8e339c94d73dad9ac2b7ed70b1948472e2b2d295900",
+    "app/rag/context.py": "91e77acb46b98818ac5980581065da7348974d57aa9fb8b6e8f0b541096a8238",
+    "app/rag/generation.py": "6a291f785eea7c57e269224e874dcf210413ba1ef210a23f322f84c1ed219a90",
+    "app/rag/settings.py": "3be0950b0e5ac39d146641bb123a7e156f4ca021bb0ce11a242a39851b973cb7",
+    "app/ranking/__init__.py": "710bad221f70c3d92db4ea209e115a03434da708672df203a2748cc4bd267f8a",
+    "app/ranking/fusion.py": "e3d8f5c29b02da3c178a1e1ef98ca105e6616ca674b4673590743223ced6b0d1",
+    "app/ranking/learned.py": "30d869d879d2e96dc34e0f6a447f56d3ef94443aa7ee34ce96da8d82dd07f3e0",
+    "app/recommender.py": "cfd4697c0d60731513b008817b817ca8a33d305e8d92ca791994e641b354f25e",
+    "app/retrieval/__init__.py": "12aad59a005c531a21295d3bafe3dd0739d81e8ce5ef7897a82efcc7f41532d5",
+    "app/retrieval/baselines.py": "be18d80eb66e6cc93c4044c082e5462b3fb54fc05133bf95c89584557c64f21c",
+    "app/retrieval/content.py": "e568b0e4fa345ae76ac573723cff3f1f81732ab0db18faede58e3c9a32d72552",
+    "app/retrieval/query.py": "244d37606a094b47ae91e12642ef599cd38032edf8af1837c4b626cc9271bc54",
+    "app/retrieval/semantic.py": "4efca9d1d41e1a02393317c1c7b450fe63b55b50a08745ce18b2ad94346a111a",
+    "app/serving/__init__.py": "4bd4c5c9795a1a0e1ff356c32df8b9c4224856d95440aa42b084b605f31b4d6a",
+    "app/serving/model.py": "674a4558d109e9bcb3cd9eadd39c79ce10209a8470418bc6862041fc444e894b"
+  },
+  "experiment_id": "query_quality_v1",
+  "inputs": {
+    "businesses.jsonl": "a3e7e91bd5edee8ccfc3a7155543dc92a0ad88adce5958c6ed0d4de4de66ceff",
+    "cases": "a9ed75bb0f9779ebffcf3d920775ef9f166e58d4f21afee785c78f9f0326cc4a",
+    "data_manifest.json": "0b13068e6acb97c4bf831eed7137bbf294153c5f8d377efa5487be36ca12c255",
+    "history": "82f43a17e9d197295d9593d7bf5831a7285aa9579c096b1c92f34b1e8d9609fd",
+    "ranker": "d285e41c3bf9dd2fe1cfc1c3012ccbe161cbcdb039203517303f097324d94d2b",
+    "representative_reviews.jsonl": "3ff026bffba2cb1b0bac4250a3c3f105b85bfb5fe11feb2815b6cf82c0b973e4",
+    "search": "0235c6a6d9f0b2f55e1c9c2e5cc7e44c20f0fb5d77c1cbe3874b31591ec4aa5f"
+  },
+  "outputs": {
+    "metrics.json": {
+      "bytes": 1160,
+      "sha256": "ddef13742e422f34e1e1271b538fef2c0d6f5138625d1da0360ddcfd164555e9"
+    },
+    "query_results.json": {
+      "bytes": 678247,
+      "sha256": "49dcbdc87bc2cd831586c5639c78ab7b2b48e5ada925362b8630024a5e673c3f"
+    },
+    "review_sheet.csv": {
+      "bytes": 119935,
+      "sha256": "a4ab0fc3106f83f5857eb60f0427c93b621d909759ef0c90dd786ca6cc5c3573"
+    }
+  },
+  "snapshot_id": "be7e1521eee428bec2825d5da1224e952e5eb6a9cdad26e530282ce21b0d33dd"
+}

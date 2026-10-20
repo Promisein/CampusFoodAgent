@@ -13,6 +13,7 @@ from app.events import EventRepository, register_event_routes
 from app.demo import register_demo_routes
 from app.rag.settings import load_settings,RagSettings
 from app.rag.generation import AnswerService
+from app.evidence import link_answer_evidence
 
 app = FastAPI(title="CampusFoodAgent Yelp v2 API", version="0.5.0")
 dataset_repository = ProcessedDatasetRepository(
@@ -69,6 +70,7 @@ def attach_answer(request,response):
                 'text':'推荐结果已生成，但暂时无法生成带引用的说明，请查看餐厅卡片。','items':[],'citations':[],
                 'provider_attempted':False}
     response.answer=answer
+    link_answer_evidence(response)
 
 
 @app.get('/api/v2/system/status')

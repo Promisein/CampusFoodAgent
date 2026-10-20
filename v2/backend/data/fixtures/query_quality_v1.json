@@ -1,0 +1,515 @@
+{
+  "version": "query_quality_v1",
+  "label_source": "agent_curated_functional_not_human_gold",
+  "scope": "40 fixed realistic queries against historical Tampa catalog; not actual user logs or blind holdout",
+  "cases": [
+    {
+      "id": "q01",
+      "group": "category",
+      "request": {
+        "query": "咖啡"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Coffee & Tea"
+        ]
+      }
+    },
+    {
+      "id": "q02",
+      "group": "category",
+      "request": {
+        "query": "想吃披萨"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Pizza"
+        ]
+      }
+    },
+    {
+      "id": "q03",
+      "group": "category",
+      "request": {
+        "query": "中餐"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Chinese"
+        ]
+      }
+    },
+    {
+      "id": "q04",
+      "group": "category",
+      "request": {
+        "query": "寿司"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Sushi Bars"
+        ]
+      }
+    },
+    {
+      "id": "q05",
+      "group": "category",
+      "request": {
+        "query": "墨西哥菜"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Mexican"
+        ]
+      }
+    },
+    {
+      "id": "q06",
+      "group": "category",
+      "request": {
+        "query": "泰餐"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Thai"
+        ]
+      }
+    },
+    {
+      "id": "q07",
+      "group": "category",
+      "request": {
+        "query": "意大利菜"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Italian"
+        ]
+      }
+    },
+    {
+      "id": "q08",
+      "group": "category",
+      "request": {
+        "query": "汉堡"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Burgers"
+        ]
+      }
+    },
+    {
+      "id": "q09",
+      "group": "category",
+      "request": {
+        "query": "海鲜"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Seafood"
+        ]
+      }
+    },
+    {
+      "id": "q10",
+      "group": "category",
+      "request": {
+        "query": "纯素"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Vegan"
+        ]
+      }
+    },
+    {
+      "id": "q11",
+      "group": "soft_preference",
+      "request": {
+        "query": "安静的咖啡店"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Coffee & Tea",
+          "Cafes"
+        ]
+      }
+    },
+    {
+      "id": "q12",
+      "group": "soft_preference",
+      "request": {
+        "query": "咖啡，适合聊天"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Coffee & Tea",
+          "Cafes"
+        ]
+      }
+    },
+    {
+      "id": "q13",
+      "group": "soft_preference",
+      "request": {
+        "query": "咖啡，户外座位"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Coffee & Tea",
+          "Cafes"
+        ]
+      }
+    },
+    {
+      "id": "q14",
+      "group": "soft_preference",
+      "request": {
+        "query": "约会的意大利菜"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Italian"
+        ]
+      }
+    },
+    {
+      "id": "q15",
+      "group": "soft_preference",
+      "request": {
+        "query": "安静的中餐"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Chinese"
+        ]
+      }
+    },
+    {
+      "id": "q16",
+      "group": "soft_preference",
+      "request": {
+        "query": "披萨，户外"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Pizza"
+        ]
+      }
+    },
+    {
+      "id": "q17",
+      "group": "soft_preference",
+      "request": {
+        "query": "quiet coffee"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Coffee & Tea",
+          "Cafes"
+        ]
+      }
+    },
+    {
+      "id": "q18",
+      "group": "soft_preference",
+      "request": {
+        "query": "coffee conversation"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Coffee & Tea",
+          "Cafes"
+        ]
+      }
+    },
+    {
+      "id": "q19",
+      "group": "soft_preference",
+      "request": {
+        "query": "romantic italian"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Italian"
+        ]
+      }
+    },
+    {
+      "id": "q20",
+      "group": "soft_preference",
+      "request": {
+        "query": "outdoor breakfast"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Breakfast & Brunch"
+        ]
+      }
+    },
+    {
+      "id": "q21",
+      "group": "constraint",
+      "request": {
+        "query": "咖啡，不要披萨"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Coffee & Tea",
+          "Cafes"
+        ],
+        "exclude_any": [
+          "Pizza"
+        ]
+      }
+    },
+    {
+      "id": "q22",
+      "group": "constraint",
+      "request": {
+        "query": "不要披萨，也不要汉堡"
+      },
+      "expected": {
+        "outcome": "results",
+        "exclude_any": [
+          "Pizza",
+          "Burgers"
+        ]
+      }
+    },
+    {
+      "id": "q23",
+      "group": "constraint",
+      "request": {
+        "query": "coffee within 1 km"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Coffee & Tea",
+          "Cafes"
+        ],
+        "radius_km": 1
+      }
+    },
+    {
+      "id": "q24",
+      "group": "constraint",
+      "request": {
+        "query": "披萨，价格等级不超过1"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Pizza"
+        ],
+        "max_price_level": 1
+      }
+    },
+    {
+      "id": "q25",
+      "group": "constraint",
+      "request": {
+        "query": "coffee price level 2"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Coffee & Tea",
+          "Cafes"
+        ],
+        "max_price_level": 2
+      }
+    },
+    {
+      "id": "q26",
+      "group": "constraint",
+      "request": {
+        "query": "咖啡，2公里内",
+        "radius_km": 0.5
+      },
+      "expected": {
+        "outcome": "results",
+        "radius_km": 0.5
+      }
+    },
+    {
+      "id": "q27",
+      "group": "constraint",
+      "request": {
+        "query": "咖啡，价格等级3",
+        "max_price_level": 1
+      },
+      "expected": {
+        "outcome": "results",
+        "max_price_level": 1
+      }
+    },
+    {
+      "id": "q28",
+      "group": "constraint",
+      "request": {
+        "query": "vegetarian without pizza"
+      },
+      "expected": {
+        "outcome": "results",
+        "include_any": [
+          "Vegetarian"
+        ],
+        "exclude_any": [
+          "Pizza"
+        ]
+      }
+    },
+    {
+      "id": "q29",
+      "group": "clarification",
+      "request": {
+        "query": "咖啡，50元以内"
+      },
+      "expected": {
+        "outcome": "clarify"
+      }
+    },
+    {
+      "id": "q30",
+      "group": "clarification",
+      "request": {
+        "query": "open now coffee"
+      },
+      "expected": {
+        "outcome": "clarify"
+      }
+    },
+    {
+      "id": "q31",
+      "group": "clarification",
+      "request": {
+        "query": "海鲜，花生过敏"
+      },
+      "expected": {
+        "outcome": "clarify"
+      }
+    },
+    {
+      "id": "q32",
+      "group": "clarification",
+      "request": {
+        "query": "咖啡，不要咖啡"
+      },
+      "expected": {
+        "outcome": "clarify"
+      }
+    },
+    {
+      "id": "q33",
+      "group": "clarification",
+      "request": {
+        "query": "想吃火锅"
+      },
+      "expected": {
+        "outcome": "clarify"
+      }
+    },
+    {
+      "id": "q34",
+      "group": "clarification",
+      "request": {
+        "query": "咖啡，三公里内"
+      },
+      "expected": {
+        "outcome": "clarify"
+      }
+    },
+    {
+      "id": "q35",
+      "group": "clarification",
+      "request": {
+        "query": "coffee within 500 meters"
+      },
+      "expected": {
+        "outcome": "clarify"
+      }
+    },
+    {
+      "id": "q36",
+      "group": "clarification",
+      "request": {
+        "query": "咖啡，价格等级2.5"
+      },
+      "expected": {
+        "outcome": "clarify"
+      }
+    },
+    {
+      "id": "q37",
+      "group": "no_result",
+      "request": {
+        "query": "咖啡",
+        "city": "Nonexistent Audit City"
+      },
+      "expected": {
+        "outcome": "empty"
+      }
+    },
+    {
+      "id": "q38",
+      "group": "no_result",
+      "request": {
+        "query": "披萨",
+        "latitude": 0,
+        "longitude": 0,
+        "radius_km": 0.1
+      },
+      "expected": {
+        "outcome": "empty"
+      }
+    },
+    {
+      "id": "q39",
+      "group": "no_result",
+      "request": {
+        "query": "coffee",
+        "radius_km": 1e-05
+      },
+      "expected": {
+        "outcome": "empty"
+      }
+    },
+    {
+      "id": "q40",
+      "group": "no_result",
+      "request": {
+        "query": "seafood",
+        "latitude": 28.9,
+        "longitude": -82.4572,
+        "radius_km": 0.1
+      },
+      "expected": {
+        "outcome": "empty"
+      }
+    }
+  ]
+}

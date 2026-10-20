@@ -72,6 +72,8 @@ POST `/api/v2/recommend`新增可选布尔字段`generate_answer`，默认false�
 
 代码位于app/rag/settings.py、context.py、generation.py。演示页对回答和引用使用textContent渲染；凭证不进入页面、事件库或源码。自动化测试强制空环境密钥，并用MockTransport模拟网络，避免开发者以后填入密钥后意外付费。
 
+后续query_quality_v1阶段把BM25句子检索统一到app/evidence.py，context.py复用同一检索器。卡片evidence新增cue、citation_id、used_in_answer，metadata新增answer_evidence_covered_business_ids，用于标注相同证据是否被回答引用。推荐顺序与分数不随说明开关变化，证据对象的引用标记会变化。固定查询与人工复核方法见[24验收文档](24-真实查询审计与统一证据验收.md)。
+
 ## 能力边界
 
 这是“模型选择/组织事实与引用＋程序受控渲染”的RAG，不是自由语言改写。这样可以机械校验输出来源，代价是语言表达较固定。没有宣称通过字符串或引用ID就能证明自然语言语义蕴含。

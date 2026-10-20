@@ -57,10 +57,14 @@ function card(item,context) {
   const article=node('article',undefined,'card');
   article.append(node('h2',item.name),node('p',[item.city,(item.categories || []).join(' / '),'价格 '+item.price_level,'评分 '+item.rating,'距离 '+item.distance_km+' km'].join(' · '),'muted'));
   const reasons=node('ul'); for(const reason of item.reasons || []) reasons.append(node('li',reason)); article.append(reasons);
-  article.append(node('p','证据状态：'+(item.evidence_status || 'unknown'),'tag'));
+  const statuses={related_mentions:'有相关提及，尚未人工判定是否支持需求',mixed_cues:'包含否定或混合线索，请核对原文',insufficient:'缺少相关证据',not_requested:'未提出可检索的证据主题'};
+  article.append(node('p','证据状态：'+(statuses[item.evidence_status] || item.evidence_status || '未知'),'tag'));
+  if(context.answerRequested && !context.covered.includes(item.business_id)) article.append(node('p','本店未被本次说明覆盖；以下是同一检索器返回的相关证据。','muted'));
   for(const evidence of item.evidence || []) {
     const block=node('blockquote',undefined,'evidence');
-    block.append(node('p',evidence.excerpt || evidence.text || ''),node('small',(evidence.source || '')+' · '+(evidence.document_id || ''))); article.append(block);
+    const selection=evidence.citation_id?'['+evidence.citation_id+'] '+(evidence.used_in_answer?'本次说明已引用':'相关证据，本次说明未引用'):'相关证据';
+    const cue=evidence.cue==='negative_cue'?'含否定线索，需核对语境':'仅为相关提及，未判定支持立场';
+    block.append(node('p',evidence.excerpt || evidence.text || ''),node('small',selection+' · '+cue+' · '+(evidence.source || '')+' · '+(evidence.document_id || ''))); article.append(block);
   }
   const actions=node('div',undefined,'actions'); const disabled=!context.requestId;
   addAction(actions,'点击 / 感兴趣',()=>sendEvent(context,item.business_id,'click'),disabled);
@@ -82,7 +86,7 @@ byId('search').addEventListener('submit',async event=>{
       byId('answer-text').textContent=result.answer.text || '';
       for(const citation of result.answer.citations || []) byId('answer-citations').append(node('p','['+citation.id+'] '+citation.source+' · '+citation.review_id+' · '+citation.cue,'muted'));
     }
-    const context={userId,requestId:result.metadata && result.metadata.request_id};
+    const context={userId,requestId:result.metadata && result.metadata.request_id,answerRequested:!!result.answer,covered:(result.metadata && result.metadata.answer_evidence_covered_business_ids) || []};
     const items=result.recommendations || [];byId('results').replaceChildren(...items.map(item=>card(item,context)));
     byId('metadata').textContent=JSON.stringify(result.metadata || {},null,2);
     byId('notice').textContent=items.length?'已展示 '+items.length+' 条推荐。':'没有符合约束的结果，请查看意图与警告。';

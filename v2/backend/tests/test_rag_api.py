@@ -13,7 +13,13 @@ def test_answer_is_opt_in_and_no_key_fallback_keeps_recommendations(tmp_path,mon
     monkeypatch.setattr(main,'get_rag_service',lambda:AnswerService(RagSettings()))
     original=client.post('/api/v2/recommend',json={**payload(),'query':'披萨'}).json()
     augmented=client.post('/api/v2/recommend',json={**payload(),'query':'披萨','generate_answer':True}).json()
-    assert original['recommendations']==augmented['recommendations']
+    def without_linking(items):
+        for item in items:
+            for evidence in item['evidence']:
+                evidence.pop('citation_id',None)
+                evidence.pop('used_in_answer',None)
+        return items
+    assert without_linking(original['recommendations'])==without_linking(augmented['recommendations'])
     assert original['answer'] is None
     assert augmented['answer']['reason']=='missing_key'
     assert augmented['metadata']['request_id']

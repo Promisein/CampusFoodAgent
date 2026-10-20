@@ -21,6 +21,9 @@ class EvidenceItem(BaseModel):
     excerpt: str | None = None
     matched_terms: list[str] = Field(default_factory=list)
     relevance_score: float = 0
+    cue: str = "mention_only"
+    citation_id: str | None = None
+    used_in_answer: bool = False
 
 
 class RestaurantRecommendation(BaseModel):

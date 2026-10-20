@@ -1,0 +1,31 @@
+{
+  "browser": {
+    "all_quotes_present_in_answer": true,
+    "answer_opt_out_hides_panel": true,
+    "console_errors": 0,
+    "eight_cards_uncovered": 3,
+    "five_cards": 5,
+    "isolated_no_key_server": true,
+    "numbered_quotes": 10,
+    "separate_event_store": true
+  },
+  "human_labels": {
+    "evidence": 0,
+    "restaurant": 0
+  },
+  "live_provider_calls": 0,
+  "local_outputs": "backend/data/derived/query_quality_v1; full Yelp text and sheets intentionally untracked",
+  "manifest_integrity": "verified",
+  "pip_check": "passed",
+  "reproducibility": "all audit files identical across two final runs",
+  "review": {
+    "duplicate_review_id_fix": "red then green regression; winning row text retained",
+    "independent_scoped_tests_passed": 10,
+    "remaining_important_findings": 0
+  },
+  "tests": {
+    "passed": 227,
+    "warning": "existing Starlette/AnyIO deprecation",
+    "warnings": 1
+  }
+}
