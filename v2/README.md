@@ -4,7 +4,7 @@
 >
 > 重构方案依据日期：2026年6月18日
 >
-> 当前版本：在线 API `v0.2.0`；离线实验 `baseline_recall_v1`（热门、ItemCF、交替合并与时间回放）
+> 当前版本：在线 API `v0.2.0`；离线实验 `fullcity_content_v1`（完整城市交互、共同目标对照、类别内容召回）
 
 CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数据重构的城市餐饮推荐项目。项目目标是把地理硬约束、个性化推荐、证据检索和受控 Agent 编排组合成可运行、可解释、可追溯的餐饮决策系统。
 
@@ -78,7 +78,11 @@ CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数�
 - 全局冻结时间窗口的热门、ItemCF 与交替合并候选基线；
 - 严格截止点画像、协同统计、历史评分与历史商户可见性，独立模拟地理场景；
 - Recall/NDCG/Coverage、用户分群、目标资格覆盖、通道互补及失败案例报告；
-- 61 个 API、推荐、数据、画像、召回与离线回放自动化测试。
+- 同一Tampa商户集合完整332,829条Review交互、120,220名用户的紧凑数据重建；
+- 类别TF-IDF、价格匹配内容召回，历史可见/资料预先已知的显式候选策略；
+- 同目标旧/完整历史对照、固定参考分群、全量候选摘要与约束审计；
+- 暂存整目录发布、失败回滚、产物SHA256及执行依赖代码指纹；
+- 84 个 API、推荐、数据、画像、召回与离线回放自动化测试。
 
 ### 当前在线 processed 数据
 
@@ -102,9 +106,11 @@ CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数�
 
 测试集全城Recall@20：热门0.000214、ItemCF 0.000534、合并0.000427；仅有4,262/9,366目标在历史商户库，冷用户7,262人。指标较低，不能声称整体显著提升。完整解释与复现见[阶段记录](docs/12-画像感知召回与评估实施记录.md)及[实验报告](docs/13-基线召回实验报告.md)。
 
+同日下一阶段完成`fullcity_content_v1`：保留全部目标商户Review，沿用原时间边界，以完整数据定义共同目标，比较旧/完整历史及类别内容通道。在同一32,371个测试目标上，全城热门Recall@20从0.020296到0.088320，双路从0.019709到0.088443；三路0.085540未超过双路。新旧目标口径不同，不能直接与上段9,366人实验计算提升。完整数据与新模型均单独存放，在线API仍读取原processed。见[14-实施记录](docs/14-完整交互与内容召回实施记录.md)及[15-实验报告](docs/15-完整交互与内容召回实验报告.md)。
+
 ### 规划中
 
-- 在线接入已完成的离线热门/ItemCF基线；查询语义和冷启动内容召回；
+- 在线接入已完成的离线热门/ItemCF/类别内容基线；查询语义与真实请求冷启动偏好输入；
 - RRF 融合及 LightGBM/LambdaMART 排序；
 - 商户资料、评论主题摘要和代表评论的混合 RAG；
 - 意图解析、证据检索、收藏、反馈和历史查询等受控工具；
@@ -134,7 +140,10 @@ v2/
     │   │   ├── build_profiles.py       # 无未来泄漏画像快照
     │   │   └── profile_repository.py   # 画像校验、缓存与查询
     │   ├── retrieval/baselines.py      # 截止点画像、热门、ItemCF、交替合并
-    │   └── evaluation/baseline_replay.py # 时间回放、指标、溯源与报告
+    │   ├── retrieval/content.py        # 类别TF-IDF、价格匹配与三路合并
+    │   ├── evaluation/baseline_replay.py # 原10万交互基线回放
+    │   ├── evaluation/content_study.py # 完整城市共同目标对照
+    │   └── artifact_io.py             # 完整产物发布、回滚与哈希校验
     ├── data/
     │   ├── README.md                # 数据取舍、字段和运行说明
     │   ├── archive/                 # 原始 Yelp 文件，仅本地保存
@@ -155,6 +164,7 @@ v2/
 | 测试 | pytest `9.0.2`、HTTPX `0.28.1` |
 | 数据处理 | Python 标准库流式读取与 JSONL 输出 |
 | 当前推荐 | Haversine 距离、硬过滤、加权规则评分 |
+| 离线召回 | 历史热门、ItemCF、类别TF-IDF/价格匹配、双/三路交替合并 |
 
 ## 快速开始
 
@@ -187,7 +197,7 @@ Set-Location .\v2\backend
 & $python -m pytest tests/ -v
 ```
 
-2026年10月20日验证结果：61个测试通过。离线实验使用标准库，无新增依赖。
+2026年10月20日最终验证结果：84个测试通过。离线实验使用标准库，无新增依赖。
 
 ### 4. 运行离线基线实验
 
@@ -200,6 +210,15 @@ Set-Location .\v2\backend
 ```
 
 输出 `metrics.json`、`experiment_manifest.json`、`report.md`、`profiles.jsonl`、`neighbors.jsonl` 和 `request_trace.jsonl`。后面三个文件包含本地派生标识和较大规模候选，不提交仓库；聚合指标位于 `docs/experiments/baseline_recall_v1/`。支持同时指定 `--validation-cutoff` 和 `--test-cutoff` 固定窗口；不传时按全局时间60%/80%位置取边界，同时间戳不进入该截止点历史。
+
+### 5. 完整城市交互与内容召回实验
+
+```powershell
+& $python -B -m app.data_pipeline.full_city_corpus
+& $python -B -m app.evaluation.content_study
+```
+
+第一条流式扫描原始Review，输出`data/derived/tampa_full_reviews_v1`，不覆盖原processed。第二条输出`data/derived/fullcity_content_v1`，固定原两个时间边界，旧/完整历史使用同目标。类别内容基线不是语义Embedding；snapshot_catalog是商户资料预先已知的辅助条件实验。重跑保留上一完整输出在同父目录`.目录名.previous-唯一标识`中；manifest覆盖产物SHA256，完整数据读入前校验。聚合结果在`docs/experiments/fullcity_content_v1/`，详见14/15文档。
 
 ## API 使用
 
@@ -414,7 +433,7 @@ request -> intent schema -> hard filters -> parallel recall
 | --- | --- | --- |
 | `backend/app/data_pipeline/` | Yelp 导入、城市筛选和数据整理 | 已有首版 |
 | `backend/app/profiles/` | 画像快照、版本和只读仓库 | 离线首版已完成；在线接入未完成 |
-| `backend/app/retrieval/` | 热门、ItemCF和交替合并已完成；语义、内容待实现 | 离线基线已实现 |
+| `backend/app/retrieval/` | 热门、ItemCF、类别内容及双/三路交替合并；语义待实现 | 离线三通道已实现 |
 | `backend/app/ranking/` | RRF、排序特征和 LightGBM | 规划中 |
 | `backend/app/rag/` | 文档构建、混合检索和证据包 | 规划中 |
 | `backend/app/agent/` | 意图 schema、工具、状态和编排 | 规划中 |
@@ -429,9 +448,9 @@ request -> intent schema -> hard filters -> parallel recall
 
 营业时间的后续实现还需要处理跨午夜、时区和缺失值。缺少营业数据时应标记“状态未知”，不能自动解释为正在营业。
 
-### 2. 多路召回与排序（离线双路基线已实现，其余规划中）
+### 2. 多路召回与排序（离线三通道已实现，学习排序规划中）
 
-离线现状：`retrieval/baselines.py`已实现历史热门、ItemCF、模拟地理过滤及交替合并；`evaluation/baseline_replay.py`已完成回放与报告。以下为完整目标，时间衰减、语义/内容、RRF及LightGBM尚未实现。
+离线现状：`retrieval/baselines.py`已实现历史热门、ItemCF、模拟地理过滤及交替合并；`retrieval/content.py`已实现类别TF-IDF与价格匹配；`evaluation/content_study.py`已完成完整交互共同目标对照。三路合并不稳定优于双路，当前保留双路基准。以下为完整目标，时间衰减、查询语义、RRF及LightGBM尚未实现。
 
 - 画像/协同召回：从用户历史高评分商户出发，首版使用 ItemCF；
 - 查询语义召回：编码软偏好与商户文档，使用 FAISS 或轻量向量索引；
@@ -532,7 +551,7 @@ reason_business_ids, model_or_index_version
 
 ### 当前自动化测试
 
-当前61个测试覆盖：
+当前84个测试覆盖：
 
 - 健康检查、数据集状态与推荐 API；
 - 城市、半径、价格和营业状态过滤，以及数据整理阶段的餐饮类别筛选；
@@ -549,6 +568,8 @@ reason_business_ids, model_or_index_version
 - 画像阶段没有改变当前在线规则推荐引擎。
 - ItemCF手算相似度、共现收缩、最近差评覆盖、冷用户、地理过滤与候选去重；
 - 全局截止点、不可见目标分母、单目标指标、分群、未来隔离、失败案例、确定性与输出目录保护。
+- 完整城市无截断采样、紧凑字段、原始输入校验、内容类别/价格匹配、明确候选策略、跨Python哈希种子复现；
+- 共同目标分母、固定参考分群、流式指标、旧样本一致子集校验、产物哈希、目录发布失败回滚及依赖指纹。
 
 ## 开发路线图
 
@@ -557,7 +578,7 @@ reason_business_ids, model_or_index_version
 | 阶段 | CampusFoodAgent v2 任务 | 验收产物 | 当前状态 |
 | --- | --- | --- | --- |
 | 第 5 周：真实数据替换 | Yelp 版本、许可、单城市筛选、统一 schema、时间切分 | manifest、过滤统计、可追溯 ID | 数据整理、在线接入和时间切分已完成 |
-| 第 6 周：画像与推荐 | `as_of_time` 画像、四路召回、RRF、LightGBM | 推荐主实验、消融、冷用户分群 | 画像、热门/ItemCF离线基线与分群评估已完成；在线接入、语义/内容、RRF与排序待实现 |
+| 第 6 周：画像与推荐 | `as_of_time`画像、多路召回、RRF、LightGBM | 推荐主实验、消融、冷用户分群 | 完整交互、画像、热门/ItemCF/内容离线召回与共同目标评估已完成；在线接入、语义、RRF与排序待实现 |
 | 第 7 周：RAG 与工具 | 三类文档、混合检索、六个工具、白名单与降级 | RAG 评测、工具回归、证据包 | 规划中 |
 | 第 8 周：反馈与展示 | 五类事件、演示画像、故障注入、延迟测试、前端 | 三分钟演示、报告和完整 README | 规划中 |
 
@@ -669,6 +690,8 @@ flowchart LR
 | [11-画像验收记录](docs/11-第四段-画像验收实施记录.md) | 画像仓库、真实数据集成测试和文档收尾 |
 | [12-画像感知召回与评估](docs/12-画像感知召回与评估实施记录.md) | 全局时间协议、热门/ItemCF、产物、测试与复现 |
 | [13-基线召回实验报告](docs/13-基线召回实验报告.md) | 真实指标、覆盖瓶颈、互补性与失败分析 |
+| [14-完整交互与内容召回](docs/14-完整交互与内容召回实施记录.md) | 无截断城市交互、类别内容、共同目标、可见性与产物发布 |
+| [15-完整交互与内容召回报告](docs/15-完整交互与内容召回实验报告.md) | 同目标采样对照、内容独占命中和合并失败分析 |
 
 ## 文档维护规则
 

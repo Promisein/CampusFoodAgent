@@ -266,6 +266,8 @@ outputs
 
 2026年10月20日新增离线目录：`derived/baseline_recall_v1/`，包含全局截止点画像、ItemCF邻居、候选trace、指标、报告和输入/代码SHA256。不覆盖`time_split_v1`或`profile_v1`；完整产物不提交仓库。复现与结果见`v2/docs/12-画像感知召回与评估实施记录.md`和`13-基线召回实验报告.md`。
 
+同日下一阶段新增`derived/tampa_full_reviews_v1/`（同一商户集合全部332,829条紧凑交互）和`derived/fullcity_content_v1/`（共同目标旧/新历史及类别内容对照）。省略评论正文的新交互仅用于离线研究，不直接替代在线processed。目录以完整版本切换发布，保留`.目录名.previous-*`备份；读入完整数据时校验manifest中的产物哈希。详见14/15文档。
+
 可以这样说明：
 
 > Yelp 全量数据超过本地演示和第一阶段建模需求。我先按城市和餐饮类别做统计，选择餐饮商户与评论覆盖足够的单城市子集；Business 作为结构化商户库，Review 映射为统一 Interaction，并保留代表评论作为 RAG 证据。User 全量文件不进入主链路，用户画像从历史 review 交互快照构造；Check-in 和 Tip 延后到热度特征和短文本证据扩展。所有过滤前后规模、保留来源和舍弃原因写入 manifest，保证可复现和可追溯。

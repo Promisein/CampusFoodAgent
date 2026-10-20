@@ -1,0 +1,46 @@
+{
+  "code_sha256": {
+    "artifact_io.py": "abdf1be79f645662bd956273175d8427e7e181c5704bd9722248b2a41ebad888",
+    "baselines.py": "be18d80eb66e6cc93c4044c082e5462b3fb54fc05133bf95c89584557c64f21c",
+    "full_city_corpus.py": "da5c23df1f4e9f44c3c2323c4f6c498080e6d941c2563179ae253accec0e5262"
+  },
+  "data_version": "tampa_full_reviews_v1",
+  "date_max": "2022-01-19 19:45:43",
+  "date_min": "2005-08-18 18:55:21",
+  "discarded": {
+    "outside_business_universe": 6657451
+  },
+  "inputs": {
+    "businesses": {
+      "bytes": 4738444,
+      "sha256": "a3e7e91bd5edee8ccfc3a7155543dc92a0ad88adce5958c6ed0d4de4de66ceff"
+    },
+    "reviews": {
+      "bytes": 5341868833,
+      "sha256": "a4edc050d14eec25373a75e7ee211d42f49f14f47230837d8c7849eb9c5f2f96"
+    }
+  },
+  "kept": {
+    "businesses": 3805,
+    "businesses_with_interactions": 3805,
+    "interactions": 332829,
+    "users": 120220
+  },
+  "outputs": {
+    "businesses.jsonl": {
+      "bytes": 4738444,
+      "sha256": "a3e7e91bd5edee8ccfc3a7155543dc92a0ad88adce5958c6ed0d4de4de66ceff"
+    },
+    "interactions.jsonl": {
+      "bytes": 74886525,
+      "sha256": "82cbd610ad4389fc5e81690166cb49c54a6d61051e977f32893bfe6f86a391c8"
+    }
+  },
+  "scanned_reviews": 6990280,
+  "selected_city": {
+    "city": "Tampa",
+    "state": "FL"
+  },
+  "selection_policy": "all reviews for the existing business universe; no total or per-business truncation",
+  "text_policy": "omit review text; existing evidence data is unchanged"
+}

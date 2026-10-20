@@ -1,0 +1,17 @@
+{
+  "metrics_and_candidate_digests_identical": true,
+  "models_queries_samples_report_byte_identical": true,
+  "replay_seconds": 324.651,
+  "date": "2026-10-20",
+  "tests_passed": 84,
+  "pytest_seconds": 5.3,
+  "pip_check": "passed",
+  "independent_review": "P2 fixes verified; no blockers",
+  "corpus_rebuilt_byte_identically": true,
+  "original_processed_unchanged": true,
+  "scenario_requests_audited": 289770,
+  "candidate_appearances_audited": 67988990,
+  "trace_samples_independently_audited": 120,
+  "sample_candidate_appearances_audited": 43500,
+  "document_links": "passed"
+}

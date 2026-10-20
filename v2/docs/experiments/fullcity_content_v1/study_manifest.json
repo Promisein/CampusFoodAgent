@@ -1,0 +1,74 @@
+{
+  "artifact_counts": {
+    "models": 6,
+    "queries": 57954,
+    "traces": 120
+  },
+  "code_sha256": {
+    "artifact_io.py": "abdf1be79f645662bd956273175d8427e7e181c5704bd9722248b2a41ebad888",
+    "baseline_replay.py": "6aa8f02ce5fa50c8042a0ece1e678f4bb9db0bfdd8cde5494d25397c91e4d96c",
+    "baselines.py": "be18d80eb66e6cc93c4044c082e5462b3fb54fc05133bf95c89584557c64f21c",
+    "content.py": "e568b0e4fa345ae76ac573723cff3f1f81732ab0db18faede58e3c9a32d72552",
+    "content_study.py": "c151e041821ed07b7c412273d20adeea294f8f34314138c3387273f09e6e5af6"
+  },
+  "config": {
+    "candidate_limit": 100,
+    "catalog_warning": "snapshot_catalog assumes all snapshot merchant metadata was already known; conditional only",
+    "cohort_basis": "common full-history cohort at cutoff",
+    "content_policy": "category TF-IDF cosine, positive-history weighted, inverse price difference",
+    "cutoffs": [
+      "2017-11-08 20:34:02",
+      "2019-05-30 23:02:52"
+    ],
+    "label_policy": "shared full-data first high-rating unseen-at-cutoff merchant per window",
+    "neighbor_limit": 50,
+    "radius_km": 10,
+    "shrinkage": 5
+  },
+  "environment": {
+    "dependencies": "Python standard library",
+    "platform": "Windows-10-10.0.26300-SP0",
+    "python": "3.11.15"
+  },
+  "inputs": {
+    "full:businesses.jsonl": {
+      "bytes": 4738444,
+      "sha256": "a3e7e91bd5edee8ccfc3a7155543dc92a0ad88adce5958c6ed0d4de4de66ceff"
+    },
+    "full:interactions.jsonl": {
+      "bytes": 74886525,
+      "sha256": "82cbd610ad4389fc5e81690166cb49c54a6d61051e977f32893bfe6f86a391c8"
+    },
+    "legacy:businesses.jsonl": {
+      "bytes": 4738444,
+      "sha256": "a3e7e91bd5edee8ccfc3a7155543dc92a0ad88adce5958c6ed0d4de4de66ceff"
+    },
+    "legacy:interactions.jsonl": {
+      "bytes": 74864655,
+      "sha256": "8ff1a1555c246dd3c44c58c036e05adc1da03ba7fbd118b12dbc8d50e6de4cc7"
+    }
+  },
+  "outputs": {
+    "content_models.json": {
+      "bytes": 4161015,
+      "sha256": "1d8f4ba72d3ce45b34285f12fbe3fd2042dae14ce151ab190f4a928ecdc80a15"
+    },
+    "metrics.json": {
+      "bytes": 144276,
+      "sha256": "b2d3197d3f3358e6b59c2677ca6eebee67caf7d14673f4890895606aa00f95a0"
+    },
+    "report.md": {
+      "bytes": 38632,
+      "sha256": "dd546751bbf7300d06209cb7b17a233823e2da292871aa673645f059c52e5f32"
+    },
+    "target_queries.jsonl": {
+      "bytes": 14712372,
+      "sha256": "9becc59fce644a1ac366575280e2ad8eb892bd18d21380fcbe013b8484315b63"
+    },
+    "trace_samples.jsonl": {
+      "bytes": 1494477,
+      "sha256": "3b275d53a05176841ca2f452cda3c56b9d9e323e2d2b4bde1a33ae216daa4fe5"
+    }
+  },
+  "study_id": "fullcity_content_v1"
+}
