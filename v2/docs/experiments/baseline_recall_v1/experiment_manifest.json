@@ -1,0 +1,41 @@
+{
+  "code_sha256": {
+    "baseline_replay.py": "6aa8f02ce5fa50c8042a0ece1e678f4bb9db0bfdd8cde5494d25397c91e4d96c",
+    "baselines.py": "be18d80eb66e6cc93c4044c082e5462b3fb54fc05133bf95c89584557c64f21c"
+  },
+  "config": {
+    "candidate_limit": 100,
+    "cutoffs": [
+      "2017-11-08 20:34:02",
+      "2019-05-30 23:02:52"
+    ],
+    "merge_policy": "alternate itemcf/popularity, deduplicate, truncate; no RRF",
+    "neighbor_limit": 50,
+    "positive_rating_threshold": 4,
+    "radius_km": 10.0,
+    "shrinkage": 5.0,
+    "split_policy": "global frozen windows; all same-timestamp events are outside history",
+    "target_policy": "first high-rating unseen-at-cutoff item per user per window"
+  },
+  "counts": {
+    "neighbors": 5876,
+    "profiles": 81904,
+    "traces": 37642
+  },
+  "environment": {
+    "dependencies": "Python standard library",
+    "platform": "Windows-10-10.0.26300-SP0",
+    "python": "3.11.15"
+  },
+  "experiment_id": "baseline_recall_v1",
+  "inputs": {
+    "businesses.jsonl": {
+      "bytes": 4738444,
+      "sha256": "a3e7e91bd5edee8ccfc3a7155543dc92a0ad88adce5958c6ed0d4de4de66ceff"
+    },
+    "interactions.jsonl": {
+      "bytes": 74864655,
+      "sha256": "8ff1a1555c246dd3c44c58c036e05adc1da03ba7fbd118b12dbc8d50e6de4cc7"
+    }
+  }
+}

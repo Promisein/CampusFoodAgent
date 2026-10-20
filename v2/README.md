@@ -1,10 +1,10 @@
 # CampusFoodAgent v2：基于 Yelp 数据的个性化餐饮推荐 Agent
 
-> 最后更新：2026年7月16日
+> 最后更新：2026年10月20日
 >
 > 重构方案依据日期：2026年6月18日
 >
-> 当前版本：`v0.2.0`（Tampa 推荐 API、时间切分与离线画像基线）
+> 当前版本：在线 API `v0.2.0`；离线实验 `baseline_recall_v1`（热门、ItemCF、交替合并与时间回放）
 
 CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数据重构的城市餐饮推荐项目。项目目标是把地理硬约束、个性化推荐、证据检索和受控 Agent 编排组合成可运行、可解释、可追溯的餐饮决策系统。
 
@@ -75,7 +75,10 @@ CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数�
 - 为 3,023 个 Warm 用户生成 6,046 条 Validation/Test 用户画像快照；
 - 用户画像包含类别、价格、评分、地理和最近行为特征，并通过未来信息泄漏检查；
 - 画像只读仓库、schema 校验、缓存和按用户查询；
-- 41 个 API、推荐、数据、时间切分、画像和集成自动化测试。
+- 全局冻结时间窗口的热门、ItemCF 与交替合并候选基线；
+- 严格截止点画像、协同统计、历史评分与历史商户可见性，独立模拟地理场景；
+- Recall/NDCG/Coverage、用户分群、目标资格覆盖、通道互补及失败案例报告；
+- 61 个 API、推荐、数据、画像、召回与离线回放自动化测试。
 
 ### 当前在线 processed 数据
 
@@ -95,9 +98,13 @@ CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数�
 
 时间切分与用户画像产物保存在本地 `backend/data/derived`。当前 `/api/v2/recommend` 仍使用非个性化规则评分，尚未读取 `UserProfileSnapshot`，因此不能把当前版本表述成已经完成个性化推荐模型。
 
+2026年10月20日完成离线 `baseline_recall_v1`：使用现有10万条交互，按全局60%/80%时间边界重新构建冻结画像与ItemCF；不是直接把旧leave-two-out画像用于全局协同统计。产物位于 `backend/data/derived/baseline_recall_v1`，已运行全城偏好预测与模拟10km位置约束两组实验。该阶段未改变在线API。
+
+测试集全城Recall@20：热门0.000214、ItemCF 0.000534、合并0.000427；仅有4,262/9,366目标在历史商户库，冷用户7,262人。指标较低，不能声称整体显著提升。完整解释与复现见[阶段记录](docs/12-画像感知召回与评估实施记录.md)及[实验报告](docs/13-基线召回实验报告.md)。
+
 ### 规划中
 
-- 地理热门、ItemCF、查询语义和冷启动内容召回；
+- 在线接入已完成的离线热门/ItemCF基线；查询语义和冷启动内容召回；
 - RRF 融合及 LightGBM/LambdaMART 排序；
 - 商户资料、评论主题摘要和代表评论的混合 RAG；
 - 意图解析、证据检索、收藏、反馈和历史查询等受控工具；
@@ -123,9 +130,11 @@ v2/
     │   │   ├── curate_yelp.py       # Yelp 单城市数据整理
     │   │   ├── analyze_interactions.py # 交互质量与稀疏度审计
     │   │   └── split_interactions.py   # 用户级时间切分
-    │   └── profiles/
-    │       ├── build_profiles.py       # 无未来泄漏画像快照
-    │       └── profile_repository.py   # 画像校验、缓存与查询
+    │   ├── profiles/
+    │   │   ├── build_profiles.py       # 无未来泄漏画像快照
+    │   │   └── profile_repository.py   # 画像校验、缓存与查询
+    │   ├── retrieval/baselines.py      # 截止点画像、热门、ItemCF、交替合并
+    │   └── evaluation/baseline_replay.py # 时间回放、指标、溯源与报告
     ├── data/
     │   ├── README.md                # 数据取舍、字段和运行说明
     │   ├── archive/                 # 原始 Yelp 文件，仅本地保存
@@ -178,7 +187,19 @@ Set-Location .\v2\backend
 & $python -m pytest tests/ -v
 ```
 
-当前预期结果：收集并通过 41 个测试。
+2026年10月20日验证结果：61个测试通过。离线实验使用标准库，无新增依赖。
+
+### 4. 运行离线基线实验
+
+在 `v2/backend` 下使用同一个解释器：
+
+```powershell
+& $python -B -m app.evaluation.baseline_replay `
+  --data-dir data/processed `
+  --output-dir data/derived/baseline_recall_v1
+```
+
+输出 `metrics.json`、`experiment_manifest.json`、`report.md`、`profiles.jsonl`、`neighbors.jsonl` 和 `request_trace.jsonl`。后面三个文件包含本地派生标识和较大规模候选，不提交仓库；聚合指标位于 `docs/experiments/baseline_recall_v1/`。支持同时指定 `--validation-cutoff` 和 `--test-cutoff` 固定窗口；不传时按全局时间60%/80%位置取边界，同时间戳不进入该截止点历史。
 
 ## API 使用
 
@@ -393,12 +414,12 @@ request -> intent schema -> hard filters -> parallel recall
 | --- | --- | --- |
 | `backend/app/data_pipeline/` | Yelp 导入、城市筛选和数据整理 | 已有首版 |
 | `backend/app/profiles/` | 画像快照、版本和只读仓库 | 离线首版已完成；在线接入未完成 |
-| `backend/app/retrieval/` | 地理、协同、语义、热门和冷启动召回 | 规划中 |
+| `backend/app/retrieval/` | 热门、ItemCF和交替合并已完成；语义、内容待实现 | 离线基线已实现 |
 | `backend/app/ranking/` | RRF、排序特征和 LightGBM | 规划中 |
 | `backend/app/rag/` | 文档构建、混合检索和证据包 | 规划中 |
 | `backend/app/agent/` | 意图 schema、工具、状态和编排 | 规划中 |
 | `backend/app/events/` | impression、click、favorite、dislike、rating | 规划中 |
-| `backend/app/evaluation/` | 推荐、RAG、约束和 Agent 评估 | 规划中 |
+| `backend/app/evaluation/` | 全局时间回放、召回指标与分群已实现；RAG/Agent待实现 | 离线推荐评估已实现 |
 
 ## 推荐、RAG 与 Agent 的职责边界
 
@@ -408,7 +429,9 @@ request -> intent schema -> hard filters -> parallel recall
 
 营业时间的后续实现还需要处理跨午夜、时区和缺失值。缺少营业数据时应标记“状态未知”，不能自动解释为正在营业。
 
-### 2. 多路召回与排序（规划中）
+### 2. 多路召回与排序（离线双路基线已实现，其余规划中）
+
+离线现状：`retrieval/baselines.py`已实现历史热门、ItemCF、模拟地理过滤及交替合并；`evaluation/baseline_replay.py`已完成回放与报告。以下为完整目标，时间衰减、语义/内容、RRF及LightGBM尚未实现。
 
 - 画像/协同召回：从用户历史高评分商户出发，首版使用 ItemCF；
 - 查询语义召回：编码软偏好与商户文档，使用 FAISS 或轻量向量索引；
@@ -509,7 +532,7 @@ reason_business_ids, model_or_index_version
 
 ### 当前自动化测试
 
-当前 41 个测试覆盖：
+当前61个测试覆盖：
 
 - 健康检查、数据集状态与推荐 API；
 - 城市、半径、价格和营业状态过滤，以及数据整理阶段的餐饮类别筛选；
@@ -524,6 +547,8 @@ reason_business_ids, model_or_index_version
 - Validation/Test 画像时间边界、类别、价格、评分、地理与最近行为；
 - 画像 schema、重复键、缓存、查询和真实数据防泄漏集成验收；
 - 画像阶段没有改变当前在线规则推荐引擎。
+- ItemCF手算相似度、共现收缩、最近差评覆盖、冷用户、地理过滤与候选去重；
+- 全局截止点、不可见目标分母、单目标指标、分群、未来隔离、失败案例、确定性与输出目录保护。
 
 ## 开发路线图
 
@@ -532,7 +557,7 @@ reason_business_ids, model_or_index_version
 | 阶段 | CampusFoodAgent v2 任务 | 验收产物 | 当前状态 |
 | --- | --- | --- | --- |
 | 第 5 周：真实数据替换 | Yelp 版本、许可、单城市筛选、统一 schema、时间切分 | manifest、过滤统计、可追溯 ID | 数据整理、在线接入和时间切分已完成 |
-| 第 6 周：画像与推荐 | `as_of_time` 画像、四路召回、RRF、LightGBM | 推荐主实验、消融、冷用户分群 | 画像离线首版已完成；召回、融合与排序规划中 |
+| 第 6 周：画像与推荐 | `as_of_time` 画像、四路召回、RRF、LightGBM | 推荐主实验、消融、冷用户分群 | 画像、热门/ItemCF离线基线与分群评估已完成；在线接入、语义/内容、RRF与排序待实现 |
 | 第 7 周：RAG 与工具 | 三类文档、混合检索、六个工具、白名单与降级 | RAG 评测、工具回归、证据包 | 规划中 |
 | 第 8 周：反馈与展示 | 五类事件、演示画像、故障注入、延迟测试、前端 | 三分钟演示、报告和完整 README | 规划中 |
 
@@ -627,7 +652,7 @@ flowchart LR
 
 ## 阶段文档
 
-以下文档均位于 `v2/docs`，形成于2026年7月15日至16日：
+以下文档位于 `v2/docs`，包括2026年7月的基础阶段与10月20日的离线召回阶段：
 
 | 文档 | 内容 |
 | --- | --- |
@@ -642,6 +667,8 @@ flowchart LR
 | [09-时间切分记录](docs/09-第二段-时间切分实施记录.md) | Train/Validation/Test/Cold-Sparse 切分 |
 | [10-用户画像记录](docs/10-第三段-用户画像实施记录.md) | 6,046 条无未来泄漏画像快照 |
 | [11-画像验收记录](docs/11-第四段-画像验收实施记录.md) | 画像仓库、真实数据集成测试和文档收尾 |
+| [12-画像感知召回与评估](docs/12-画像感知召回与评估实施记录.md) | 全局时间协议、热门/ItemCF、产物、测试与复现 |
+| [13-基线召回实验报告](docs/13-基线召回实验报告.md) | 真实指标、覆盖瓶颈、互补性与失败分析 |
 
 ## 文档维护规则
 

@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-20",
+  "tests_passed": 61,
+  "pip_check": "passed",
+  "independent_review": "no important findings",
+  "full_replay_seconds": 38.857,
+  "full_replay_identical_profiles_neighbors_traces": true,
+  "trace_rows_audited": 37642,
+  "candidate_appearances_audited": 5039881,
+  "audit": "rank/dedup/seen exclusion/history cutoff/geo/seed provenance/document links"
+}
