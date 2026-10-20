@@ -1,0 +1,20 @@
+{
+  "cases": 17,
+  "citation_ownership_violations": 0,
+  "claims": "references/schema/fallback regression only; not live model quality, NLI accuracy or factual truth",
+  "contract_passed": 17,
+  "experiment_id": "rag_v1",
+  "live_deepseek_calls": 0,
+  "outcomes": {
+    "authentication_failed": 1,
+    "disabled": 1,
+    "generated": 3,
+    "invalid_model_plan": 7,
+    "invalid_provider_response": 2,
+    "missing_key": 1,
+    "provider_timeout": 1,
+    "rate_limited": 1
+  },
+  "scope": "synthetic offline provider contract and grounding regression, not live DeepSeek quality",
+  "scripted_provider_attempts": 15
+}

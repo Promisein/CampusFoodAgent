@@ -1,0 +1,206 @@
+[
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "valid",
+    "mode": "deepseek_plan",
+    "reason": null,
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "foreign-merchant",
+    "mode": "template",
+    "reason": "invalid_model_plan",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "cross-citation",
+    "mode": "template",
+    "reason": "invalid_model_plan",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "forged-fact",
+    "mode": "template",
+    "reason": "invalid_model_plan",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "free-prose",
+    "mode": "template",
+    "reason": "invalid_model_plan",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "reordered",
+    "mode": "template",
+    "reason": "invalid_model_plan",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "omitted",
+    "mode": "template",
+    "reason": "invalid_model_plan",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "duplicate-reference",
+    "mode": "template",
+    "reason": "invalid_model_plan",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "timeout",
+    "mode": "template",
+    "reason": "provider_timeout",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "rate-limit",
+    "mode": "template",
+    "reason": "rate_limited",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "auth-error",
+    "mode": "template",
+    "reason": "authentication_failed",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "truncated",
+    "mode": "template",
+    "reason": "invalid_provider_response",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "empty-response",
+    "mode": "template",
+    "reason": "invalid_provider_response",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 1,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "related_mentions",
+      "d": "insufficient"
+    },
+    "id": "review-instruction",
+    "mode": "deepseek_plan",
+    "reason": null,
+    "text_sha256": "f5c754569c5ff1d77ccc21f4a342c633e80b84263ee2eee078b678fa8c74c733"
+  },
+  {
+    "citations": 0,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "insufficient",
+      "d": "insufficient"
+    },
+    "id": "no-review-match",
+    "mode": "deepseek_plan",
+    "reason": null,
+    "text_sha256": "3b39ab5a6a9d8bd48c6ea646f5f34c83afc665bb12d2caddb590c2fc2dc3fef5"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "no-key",
+    "mode": "template",
+    "reason": "missing_key",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  },
+  {
+    "citations": 2,
+    "contract_passed": true,
+    "evidence_status": {
+      "b": "mixed_cues",
+      "d": "insufficient"
+    },
+    "id": "disabled",
+    "mode": "template",
+    "reason": "disabled",
+    "text_sha256": "a34d3352de165b6297a78a5d392615f2e0238d334d3731e8f7b2d1f3cdfe6939"
+  }
+]

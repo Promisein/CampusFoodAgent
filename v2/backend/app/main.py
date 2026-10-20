@@ -11,8 +11,10 @@ from app.serving.model import ServingRepository
 from app.ranking.learned import RankingRepository
 from app.events import EventRepository, register_event_routes
 from app.demo import register_demo_routes
+from app.rag.settings import load_settings,RagSettings
+from app.rag.generation import AnswerService
 
-app = FastAPI(title="CampusFoodAgent Yelp v2 API", version="0.4.0")
+app = FastAPI(title="CampusFoodAgent Yelp v2 API", version="0.5.0")
 dataset_repository = ProcessedDatasetRepository(
     Path(__file__).resolve().parents[1] / "data" / "processed"
 )
@@ -39,9 +41,39 @@ register_event_routes(app,lambda:get_event_repository())
 register_demo_routes(app)
 
 
+def get_rag_service():
+    return AnswerService(load_settings())
+
+
+@app.get('/api/v2/rag/status')
+def rag_status():
+    try:return get_rag_service().settings.public_status()
+    except (OSError,ValueError,TypeError):
+        return {'version':'rag_v1','enabled':False,'configured':False,'reason':'invalid_configuration'}
+
+
+def attach_answer(request,response):
+    try:
+        service=get_rag_service()
+    except (OSError,ValueError,TypeError):
+        service=AnswerService(RagSettings(enabled=False))
+        invalid_configuration=True
+    else:invalid_configuration=False
+    try:reviews=dataset_repository.load_representative_reviews_by_business()
+    except (OSError,ValueError,TypeError,KeyError):reviews={}
+    try:
+        answer=service.generate(request,response,reviews)
+        if invalid_configuration:answer['reason']='invalid_configuration'
+    except (OSError,ValueError,TypeError,KeyError,IndexError):
+        answer={'version':'rag_v1','mode':'template','status':'fallback','reason':'rag_unavailable',
+                'text':'推荐结果已生成，但暂时无法生成带引用的说明，请查看餐厅卡片。','items':[],'citations':[],
+                'provider_attempted':False}
+    response.answer=answer
+
+
 @app.get('/api/v2/system/status')
 def system_status():
-    result={'version':'0.4.0','scope':'local_offline_demo'}
+    result={'version':'0.5.0','scope':'local_offline_demo','rag':rag_status()}
     for key,repository in [('history',serving_repository),('search',search_repository),('ranker',ranking_repository)]:
         try:
             if repository is None:raise ValueError('Unavailable dependency')
@@ -93,6 +125,8 @@ def recommend(request: RecommendationRequest):
                 search_repository=search_repository,ranking_repository=ranking_repository)
         else:
             response=recommend_anonymous(request,dataset_repository,search_repository=search_repository)
+        if request.generate_answer:
+            attach_answer(request,response)
         try:
             response.metadata['request_id']=get_event_repository().record_exposure(request,response)
         except (OSError,sqlite3.Error,ValueError):

@@ -10,6 +10,7 @@ class RecommendationRequest(BaseModel):
     max_price_level: int = Field(default=4, ge=1, le=4)
     city: str = Field(default="Tampa", min_length=1)
     top_k: int = Field(default=5, ge=1, le=20)
+    generate_answer: bool = Field(default=False, strict=True)
 
 
 class EvidenceItem(BaseModel):
@@ -46,6 +47,7 @@ class RecommendationResponse(BaseModel):
     engine: str
     recommendations: list[RestaurantRecommendation]
     metadata: dict = Field(default_factory=dict)
+    answer: dict | None = None
 
 
 class HealthResponse(BaseModel):

@@ -1,0 +1,46 @@
+{
+  "api_no_key_audit": {
+    "answer_requests": 24,
+    "citations": 63,
+    "needs_clarification": 6,
+    "negative_cue_citations": 7,
+    "provider_calls": 0,
+    "ranking_and_citation_audit": "passed",
+    "scope": "real Yelp snapshot with synthetic no-key requests; not live DeepSeek quality",
+    "unchanged_ranking_pairs": 24
+  },
+  "browser": {
+    "citation_labels_visible": true,
+    "missing_key_mode_visible": true,
+    "template_answer_display": true
+  },
+  "credential_file_ignored_and_untracked": true,
+  "credential_status": "not configured during acceptance",
+  "documentation_sources": [
+    "https://api-docs.deepseek.com/",
+    "https://api-docs.deepseek.com/guides/json_mode/"
+  ],
+  "independent_review": "28 targeted tests passed; no important findings; live API not exercised",
+  "live_deepseek_calls": 0,
+  "offline_contract_cases": 17,
+  "offline_contract_passed": 17,
+  "output_sha256": {
+    "case_results.json": "2fe14d0e315cc7cb61c39a737b5b79866b636de5980afffb7b6958b3f82a6e57",
+    "experiment_manifest.json": "9c8862b48cb50cfb6b74a38d50a9074b5fa0e9cbfe07c3cb281e125f52472978",
+    "metrics.json": "c58c95c4b8a1c4ac50d85e3975dcf583523e2fc6e9dbed45079784271968784e"
+  },
+  "pip_check": "No broken requirements found",
+  "replay_identical": true,
+  "runtime_code_sha256": {
+    "app/main.py": "fe9ade80100f1264b85f054d613906a594478285cf039077bcaa82eef104ffd9",
+    "app/models.py": "05f888d61cf72cab26dd7cbec7832e46db766baa9be1f279d1921aa696449793",
+    "app/rag/__init__.py": "9203585b935d939cecf01e8c6e32b0ba4fc940e4d7d18d053baace40bd86f971",
+    "app/rag/check.py": "b6dd35c657170f080d4af8e339c94d73dad9ac2b7ed70b1948472e2b2d295900",
+    "app/rag/context.py": "ef24a7d333e439ddc590b8a65d4bec7be8323426530ce3da62a7a2cd299eba5e",
+    "app/rag/generation.py": "6a291f785eea7c57e269224e874dcf210413ba1ef210a23f322f84c1ed219a90",
+    "app/rag/settings.py": "3be0950b0e5ac39d146641bb123a7e156f4ca021bb0ce11a242a39851b973cb7",
+    "app/static/demo.html": "f771f59d3aff5257ddb61d20334041a7e7f2574b180dde4eec1145b411b08bee"
+  },
+  "tests": 220,
+  "warning": "One existing Starlette/AnyIO deprecation warning"
+}

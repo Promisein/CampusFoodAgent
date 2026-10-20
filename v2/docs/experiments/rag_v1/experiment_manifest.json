@@ -1,0 +1,23 @@
+{
+  "code_sha256": {
+    "app.artifact_io": "abdf1be79f645662bd956273175d8427e7e181c5704bd9722248b2a41ebad888",
+    "app.models": "05f888d61cf72cab26dd7cbec7832e46db766baa9be1f279d1921aa696449793",
+    "app.query_intent": "430a30f8d65042c9d75335f0091d7367b982d3862d541363ce3aa82a383fe2ec",
+    "app.rag.context": "ef24a7d333e439ddc590b8a65d4bec7be8323426530ce3da62a7a2cd299eba5e",
+    "app.rag.generation": "6a291f785eea7c57e269224e874dcf210413ba1ef210a23f322f84c1ed219a90",
+    "app.rag.settings": "3be0950b0e5ac39d146641bb123a7e156f4ca021bb0ce11a242a39851b973cb7"
+  },
+  "experiment_id": "rag_v1",
+  "fixture_sha256": "275fce2d3882e2f57e6ba25b11e7ae61572b5f2f4910fe066198a4791f3a1cd0",
+  "outputs": {
+    "case_results.json": {
+      "bytes": 5481,
+      "sha256": "2fe14d0e315cc7cb61c39a737b5b79866b636de5980afffb7b6958b3f82a6e57"
+    },
+    "metrics.json": {
+      "bytes": 637,
+      "sha256": "c58c95c4b8a1c4ac50d85e3975dcf583523e2fc6e9dbed45079784271968784e"
+    }
+  },
+  "runner_sha256": "d86bd9858854437feeaa00fa0528fa17621a33fd7490782b82467bde3110faef"
+}

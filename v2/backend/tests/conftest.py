@@ -4,6 +4,8 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def isolated_default_event_store(tmp_path,monkeypatch):
+    # A developer's real .env must never turn offline tests into paid API calls.
+    monkeypatch.setenv('DEEPSEEK_API_KEY','')
     import app.main as main
     from app.events import EventRepository
     repository=EventRepository(tmp_path/'api_events.sqlite3')

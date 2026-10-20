@@ -4,7 +4,7 @@
 >
 > 重构方案依据日期：2026年6月18日
 >
-> 当前版本：在线 API `v0.4.0`；推荐闭环完成；`search_v1`混合检索 / `ranking_v1`学习排序 / 本地曝光反馈与演示
+> 当前版本：在线 API `v0.5.0`；推荐闭环＋受控RAG `rag_v1`；DeepSeek真实接入待本地填写密钥
 
 CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数据重构的城市餐饮推荐项目。项目目标是把地理硬约束、个性化推荐、证据检索和受控 Agent 编排组合成可运行、可解释、可追溯的餐饮决策系统。
 
@@ -88,7 +88,8 @@ CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数�
 - 固定查询通道与历史RRF融合、返回商户内相关评论检索及证据不足标记；
 - BM25＋64维LSA混合召回、LightGBM LambdaRank与validation启用门槛；
 - SQLite曝光/点击/收藏/不喜欢/评分、幂等与归属校验、本地浏览器演示；
-- 191 个 API、推荐、数据、画像、查询、证据、排序、反馈与回放自动化测试。
+- 商户内BM25句子证据、DeepSeek结构化引用计划、严格校验与中文受控渲染、无密钥/故障模板降级；
+- 220 个 API、推荐、数据、画像、RAG、排序、反馈与回放自动化测试。
 
 ### 当前在线 processed 数据
 
@@ -199,7 +200,7 @@ Set-Location .\v2\backend
 & $python -m pytest tests/ -v
 ```
 
-2026年10月20日最终验收：191个测试通过；新增numpy/scipy/scikit-learn/lightgbm，使用backend/.venv，精确版本见requirements.lock.txt。
+2026年10月20日受控RAG阶段验收：220个测试通过；新增numpy/scipy/scikit-learn/lightgbm，使用backend/.venv，精确版本见requirements.lock.txt。
 
 ### 4. 运行离线基线实验
 
@@ -244,6 +245,7 @@ Set-Location .\v2\backend
 | `max_price_level` | int | 默认 4，范围 `1–4` | 最高价格等级 |
 | `city` | string | 默认 `Tampa` | 当前 processed 数据城市 |
 | `top_k` | int | 默认 5，范围 `1–20` | 返回数量 |
+| `generate_answer` | bool | 默认false | 显式请求带引用说明；未配置密钥则模板，无额外联网 |
 
 ### PowerShell 请求示例
 
@@ -559,7 +561,7 @@ reason_business_ids, model_or_index_version
 
 ### 当前自动化测试
 
-当前191个测试覆盖：
+当前220个测试覆盖：
 
 - 健康检查、数据集状态与推荐 API；
 - 城市、半径、价格和营业状态过滤，以及数据整理阶段的餐饮类别筛选；
@@ -706,6 +708,8 @@ flowchart LR
 | [19-查询与证据评测](docs/19-查询与证据评测报告.md) | 人工场景对照、真实API审计及局限 |
 | [20-完整闭环](docs/20-推荐系统完整闭环实施记录.md) | 最终完成矩阵、模型、事件、界面及运行 |
 | [21-最终验收](docs/21-推荐系统最终验收与排序实验报告.md) | 真实LambdaRank结果、选择、混合检索对照及完整审计 |
+| [22-DeepSeek受控RAG](docs/22-DeepSeek受控RAG接入与配置.md) | .env密钥位置、检索/计划/校验/渲染与降级 |
+| [23-RAG验收](docs/23-RAG离线验收与边界报告.md) | 无真实密钥的离线契约与真实数据模板审计 |
 
 ## 文档维护规则
 
@@ -745,3 +749,5 @@ C:\Users\Jianing\Desktop\面试\项目重构方案\06-统一路线与面试策�
 2026年10月20日查询阶段已完成：[18实施记录](docs/18-查询理解与证据检索实施记录.md)、[19评测报告](docs/19-查询与证据评测报告.md)。固定22个合成场景不代表真实查询分布；真实Tampa仅做约束、来源和并发审计。
 
 最终演示：在v2/backend运行`.\.venv\Scripts\python.exe -B -m uvicorn app.main:app --host 127.0.0.1 --port 8100`，浏览器打开http://127.0.0.1:8100/demo。安装新模型依赖与构建命令以20文档为准；查询请求保留查询融合，历史排序只在无查询信号且通过validation门槛时启用。
+
+受控RAG已实现：在`backend/.env`的`DEEPSEEK_API_KEY=`后填写本机密钥；`generate_answer=true`或演示页勾选选项后启用。模型仅选择事实/引用ID，中文回答由程序受控渲染。当前0次真实DeepSeek调用，填写密钥后用`python -B -m app.rag.check --live`完成一次显式合成场景验证。详见22/23文档。

@@ -1,0 +1,23 @@
+{
+  "version": "rag_cases_v1",
+  "scope": "synthetic offline provider contract and grounding regression, not live DeepSeek quality",
+  "cases": [
+    {"id":"valid","provider":"valid","scene":"mixed","mode":"deepseek_plan","reason":null},
+    {"id":"foreign-merchant","provider":"foreign_merchant","scene":"mixed","mode":"template","reason":"invalid_model_plan"},
+    {"id":"cross-citation","provider":"foreign_citation","scene":"mixed","mode":"template","reason":"invalid_model_plan"},
+    {"id":"forged-fact","provider":"forged_fact","scene":"mixed","mode":"template","reason":"invalid_model_plan"},
+    {"id":"free-prose","provider":"extra_prose","scene":"mixed","mode":"template","reason":"invalid_model_plan"},
+    {"id":"reordered","provider":"reordered","scene":"mixed","mode":"template","reason":"invalid_model_plan"},
+    {"id":"omitted","provider":"omitted","scene":"mixed","mode":"template","reason":"invalid_model_plan"},
+    {"id":"duplicate-reference","provider":"duplicate","scene":"mixed","mode":"template","reason":"invalid_model_plan"},
+    {"id":"timeout","provider":"timeout","scene":"mixed","mode":"template","reason":"provider_timeout"},
+    {"id":"rate-limit","provider":"rate","scene":"mixed","mode":"template","reason":"rate_limited"},
+    {"id":"auth-error","provider":"auth","scene":"mixed","mode":"template","reason":"authentication_failed"},
+    {"id":"truncated","provider":"truncated","scene":"mixed","mode":"template","reason":"invalid_provider_response"},
+    {"id":"empty-response","provider":"empty","scene":"mixed","mode":"template","reason":"invalid_provider_response"},
+    {"id":"review-instruction","provider":"valid","scene":"injection","mode":"deepseek_plan","reason":null},
+    {"id":"no-review-match","provider":"valid","scene":"none","mode":"deepseek_plan","reason":null},
+    {"id":"no-key","provider":"no_key","scene":"mixed","mode":"template","reason":"missing_key"},
+    {"id":"disabled","provider":"disabled","scene":"mixed","mode":"template","reason":"disabled"}
+  ]
+}

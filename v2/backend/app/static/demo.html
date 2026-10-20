@@ -20,9 +20,10 @@
 <label>范围（公里）<input id="radius" type="number" required min="0.1" max="50" step="0.1" value="5"></label>
 <label>最高价格等级<select id="price"><option value="1">1 · $</option><option value="2">2 · $$</option><option value="3">3 · $$$</option><option value="4" selected>4 · $$$$</option></select></label>
 <label>结果数<input id="topk" type="number" required min="1" max="20" value="5"></label>
-</div><button class="primary" id="submit">查找推荐</button>
+</div><label style="display:block;margin-top:14px"><input id="generate-answer" type="checkbox" checked> 生成带引用的说明（未配置密钥时使用本地模板）</label><button class="primary" id="submit">查找推荐</button>
 </form>
 <p id="error" role="alert"></p><p id="notice" role="status"></p>
+<section id="answer-panel" hidden><h2>带引用的说明</h2><p id="answer-mode" class="muted"></p><pre id="answer-text"></pre><div id="answer-citations"></div></section>
 <div id="results"></div>
 <details><summary>本次请求：意图、约束、警告与排序信息</summary><pre id="metadata">尚无请求</pre></details>
 <div class="actions"><button id="favorites">查看收藏</button><button id="history">查看历史</button><button id="status">刷新系统状态</button><button id="metrics">查看反馈统计</button></div>
@@ -73,7 +74,14 @@ byId('search').addEventListener('submit',async event=>{
   event.preventDefault(); byId('error').textContent='';byId('notice').textContent='正在推荐…';byId('submit').disabled=true;
   const userId=byId('user').value.trim() || null;
   try {
-    const result=await api('/api/v2/recommend',{query:byId('query').value,user_id:userId,city:byId('city').value,latitude:Number(byId('lat').value),longitude:Number(byId('lon').value),radius_km:Number(byId('radius').value),max_price_level:Number(byId('price').value),top_k:Number(byId('topk').value)});
+    const result=await api('/api/v2/recommend',{query:byId('query').value,user_id:userId,city:byId('city').value,latitude:Number(byId('lat').value),longitude:Number(byId('lon').value),radius_km:Number(byId('radius').value),max_price_level:Number(byId('price').value),top_k:Number(byId('topk').value),generate_answer:byId('generate-answer').checked});
+    byId('answer-panel').hidden=!result.answer;
+    byId('answer-citations').replaceChildren();
+    if(result.answer){
+      byId('answer-mode').textContent=result.answer.mode==='deepseek_plan'?'DeepSeek选择事实与引用，程序校验后渲染':'本地模板说明：'+(result.answer.reason || result.answer.status);
+      byId('answer-text').textContent=result.answer.text || '';
+      for(const citation of result.answer.citations || []) byId('answer-citations').append(node('p','['+citation.id+'] '+citation.source+' · '+citation.review_id+' · '+citation.cue,'muted'));
+    }
     const context={userId,requestId:result.metadata && result.metadata.request_id};
     const items=result.recommendations || [];byId('results').replaceChildren(...items.map(item=>card(item,context)));
     byId('metadata').textContent=JSON.stringify(result.metadata || {},null,2);
