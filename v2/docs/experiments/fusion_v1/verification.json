@@ -1,0 +1,45 @@
+{
+  "all_new_artifact_manifests_verified": true,
+  "api_smoke": {
+    "anonymous_compatibility": "passed",
+    "concurrent_requests": 12,
+    "different_user_result_sets": 13,
+    "hard_constraints_seed_provenance_rrf_score_audit": "passed",
+    "model_load_seconds": 1.8339,
+    "requests": 13,
+    "snapshot_cutoff": "2022-01-20 00:00:00",
+    "testclient_warm_p50_ms": 10.705,
+    "testclient_warm_p95_ms": 193.055
+  },
+  "cohort_counts_verified": true,
+  "fusion_replay": {
+    "full_replay_identical": true,
+    "output_sha256": {
+      "experiment_manifest.json": "c4a8ff5e0cedd1d941bae3abd1c896d76768c5e80075e9174bdcc76e828cd8cf",
+      "metrics.json": "879e80d6601569d68060e5db20ba655bfa7671f6231997b1ea8f32b2bbe7007f",
+      "report.md": "3646862e0d8561331cfe7f69aab846d9fb7f8c80dbced45a42b3db9188595ce1",
+      "selection.json": "b2f3c8514edabb7918f78c26f3f3ea3c6c04b7a7da98cce54432f6e640fe0609",
+      "trace_samples.jsonl": "8b2773b4125b89c38e91255d8df49f7bc89425c9fda51804ee6aaee80791ba56"
+    },
+    "seconds": 265.61
+  },
+  "latency_scope": "local TestClient after model preload; may include dataset/evidence first load, not deployment benchmark",
+  "original_processed_business_and_interaction_hashes_verified": true,
+  "pip_check": "No broken requirements found",
+  "same_targets_as_fullcity_content_v1": true,
+  "serving_profile_count": 120220,
+  "serving_replay": {
+    "identical": true,
+    "output_sha256": {
+      "content.json": "0ad2b91fbc3f5a425cda088cd250c0264a0aa5f2491cfc46b60a3e8f71585712",
+      "manifest.json": "a4c5400bc227edc928d096f2565aba3b5af1a503d081b176509ab890b21ecfd3",
+      "neighbors.json": "d764b4f924b1cba749033fb9b6efe7f7c0cc2b9e3c61292521a8017b08cd98ec",
+      "popularity.json": "9a5d2c90968363aca34eea8b546967da9c9ffdf4c9800a4e6b74acde39835bf9",
+      "profiles.jsonl": "8d37355002d31be24840f1ed28b2db0dbfa3e7487583b29f35700750457dca3e"
+    }
+  },
+  "snapshot_cutoff": "2022-01-20 00:00:00",
+  "test_only_frozen_config_and_baselines": true,
+  "tests": 115,
+  "validation_selection_verified": true
+}

@@ -5,11 +5,14 @@ from fastapi import FastAPI, HTTPException
 from app.data_repository import ProcessedDatasetRepository
 from app.models import DatasetStatusResponse, HealthResponse, RecommendationRequest, RecommendationResponse
 from app.recommender import recommend_restaurants
+from app.personalized import recommend_personalized
+from app.serving.model import ServingRepository
 
 app = FastAPI(title="CampusFoodAgent Yelp v2 API", version="0.2.0")
 dataset_repository = ProcessedDatasetRepository(
     Path(__file__).resolve().parents[1] / "data" / "processed"
 )
+serving_repository = ServingRepository(Path(__file__).resolve().parents[1] / "data" / "derived" / "serving_v1")
 
 
 @app.get("/api/v2/health", response_model=HealthResponse)
@@ -43,8 +46,11 @@ def dataset_status():
 
 @app.post("/api/v2/recommend", response_model=RecommendationResponse)
 def recommend(request: RecommendationRequest):
-    return RecommendationResponse(
-        version="v2",
-        engine="processed_geo_keyword_evidence",
-        recommendations=recommend_restaurants(request, dataset_repository),
-    )
+    try:
+        if request.user_id is not None:
+            return recommend_personalized(request, dataset_repository, serving_repository)
+        return RecommendationResponse(
+            version="v2", engine="processed_geo_keyword_evidence",
+            recommendations=recommend_restaurants(request, dataset_repository))
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(status_code=503, detail="Recommendation data unavailable") from exc

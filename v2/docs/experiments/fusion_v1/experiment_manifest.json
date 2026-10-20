@@ -1,0 +1,45 @@
+{
+  "code_sha256": {
+    "artifact_io.py": "abdf1be79f645662bd956273175d8427e7e181c5704bd9722248b2a41ebad888",
+    "baseline_replay.py": "6aa8f02ce5fa50c8042a0ece1e678f4bb9db0bfdd8cde5494d25397c91e4d96c",
+    "baselines.py": "be18d80eb66e6cc93c4044c082e5462b3fb54fc05133bf95c89584557c64f21c",
+    "content.py": "e568b0e4fa345ae76ac573723cff3f1f81732ab0db18faede58e3c9a32d72552",
+    "content_study.py": "c151e041821ed07b7c412273d20adeea294f8f34314138c3387273f09e6e5af6",
+    "fusion.py": "e3d8f5c29b02da3c178a1e1ef98ca105e6616ca674b4673590743223ced6b0d1",
+    "fusion_study.py": "e4f0369aa55c8de09c555f70920a29091637a45c3000d1a0344f837eddf3c32e"
+  },
+  "environment": {
+    "platform": "Windows-10-10.0.26300-SP0",
+    "python": "3.11.15"
+  },
+  "experiment_id": "fusion_v1",
+  "inputs": {
+    "businesses.jsonl": {
+      "bytes": 4738444,
+      "sha256": "a3e7e91bd5edee8ccfc3a7155543dc92a0ad88adce5958c6ed0d4de4de66ceff"
+    },
+    "interactions.jsonl": {
+      "bytes": 74886525,
+      "sha256": "82cbd610ad4389fc5e81690166cb49c54a6d61051e977f32893bfe6f86a391c8"
+    }
+  },
+  "outputs": {
+    "metrics.json": {
+      "bytes": 93976,
+      "sha256": "879e80d6601569d68060e5db20ba655bfa7671f6231997b1ea8f32b2bbe7007f"
+    },
+    "report.md": {
+      "bytes": 14277,
+      "sha256": "3646862e0d8561331cfe7f69aab846d9fb7f8c80dbced45a42b3db9188595ce1"
+    },
+    "selection.json": {
+      "bytes": 574,
+      "sha256": "b2f3c8514edabb7918f78c26f3f3ea3c6c04b7a7da98cce54432f6e640fe0609"
+    },
+    "trace_samples.jsonl": {
+      "bytes": 23839,
+      "sha256": "8b2773b4125b89c38e91255d8df49f7bc89425c9fda51804ee6aaee80791ba56"
+    }
+  },
+  "selection_sha256": "fcaff282913daad68891266bf4f1a6a886e9f4f6646620e4362bf1891384fbc2"
+}

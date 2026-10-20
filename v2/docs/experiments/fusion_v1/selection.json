@@ -1,0 +1,32 @@
+{
+  "city_preference": {
+    "budgets": {
+      "content": 100,
+      "itemcf": 100,
+      "popularity": 100
+    },
+    "k": 60,
+    "mode": "rrf",
+    "name": "weighted_cf050_content010",
+    "weights": {
+      "content": 0.1,
+      "itemcf": 0.5,
+      "popularity": 1
+    }
+  },
+  "simulated_geo": {
+    "budgets": {
+      "content": 100,
+      "itemcf": 100,
+      "popularity": 100
+    },
+    "k": 60,
+    "mode": "rrf",
+    "name": "rrf_triple",
+    "weights": {
+      "content": 1,
+      "itemcf": 1,
+      "popularity": 1
+    }
+  }
+}

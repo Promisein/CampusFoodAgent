@@ -3,8 +3,9 @@ from pydantic import BaseModel, Field
 
 class RecommendationRequest(BaseModel):
     query: str = Field(..., min_length=1)
-    latitude: float
-    longitude: float
+    user_id: str | None = Field(default=None, min_length=1, max_length=128, pattern=r"\S")
+    latitude: float = Field(..., ge=-90, le=90)
+    longitude: float = Field(..., ge=-180, le=180)
     radius_km: float = Field(default=3, gt=0, le=50)
     max_price_level: int = Field(default=4, ge=1, le=4)
     city: str = Field(default="Tampa", min_length=1)
@@ -29,12 +30,15 @@ class RestaurantRecommendation(BaseModel):
     score: float
     reasons: list[str]
     evidence: list[EvidenceItem]
+    channel_scores: dict[str, dict] = Field(default_factory=dict)
+    reason_business_ids: list[str] = Field(default_factory=list)
 
 
 class RecommendationResponse(BaseModel):
     version: str
     engine: str
     recommendations: list[RestaurantRecommendation]
+    metadata: dict = Field(default_factory=dict)
 
 
 class HealthResponse(BaseModel):
