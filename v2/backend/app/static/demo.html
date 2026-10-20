@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,">
+<title>CampusFoodAgent · 本地推荐实验室</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#192e2a;background:#f3f6f3}body{max-width:1040px;margin:auto;padding:28px}h1{margin-bottom:8px}p{line-height:1.6}.muted{color:#536861}form,.card,details{background:white;border:1px solid #d7e3da;border-radius:12px;padding:20px;margin:16px 0}.inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}label{display:flex;flex-direction:column;gap:6px}input,select,button{font:inherit;border:1px solid #b8c9bf;border-radius:6px;padding:9px}button{cursor:pointer;background:#e9f0eb}button.primary{background:#205943;color:white;margin-top:18px}button:disabled{opacity:.5;cursor:wait}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.evidence{border-left:3px solid #b7cfbf;padding-left:12px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}#error{color:#9b2323;white-space:pre-wrap}#notice{white-space:pre-wrap}.tag{font-size:13px;color:#3e6655}.card h2{margin-top:0}summary{cursor:pointer}#results:empty::after{content:'输入口味或场景，查看可解释的本地推荐。';display:block;padding:22px;color:#536861}
+</style>
+</head>
+<body>
+<h1>CampusFoodAgent</h1>
+<p class="muted">本地推荐实验室 · 查询召回、证据与反馈闭环。用户 ID 是演示身份，没有登录认证；请求 ID 仅关联一次推荐曝光。此处统计不能代表线上真实效果。</p>
+<form id="search">
+<div class="inputs">
+<label>想吃什么<input id="query" required value="咖啡" maxlength="1000"></label>
+<label>演示用户 ID（可选）<input id="user" maxlength="128" placeholder="留空为匿名"></label>
+<label>城市<input id="city" required value="Tampa"></label>
+<label>纬度<input id="lat" type="number" required min="-90" max="90" step="any" value="27.9506"></label>
+<label>经度<input id="lon" type="number" required min="-180" max="180" step="any" value="-82.4572"></label>
+<label>范围（公里）<input id="radius" type="number" required min="0.1" max="50" step="0.1" value="5"></label>
+<label>最高价格等级<select id="price"><option value="1">1 · $</option><option value="2">2 · $$</option><option value="3">3 · $$$</option><option value="4" selected>4 · $$$$</option></select></label>
+<label>结果数<input id="topk" type="number" required min="1" max="20" value="5"></label>
+</div><button class="primary" id="submit">查找推荐</button>
+</form>
+<p id="error" role="alert"></p><p id="notice" role="status"></p>
+<div id="results"></div>
+<details><summary>本次请求：意图、约束、警告与排序信息</summary><pre id="metadata">尚无请求</pre></details>
+<div class="actions"><button id="favorites">查看收藏</button><button id="history">查看历史</button><button id="status">刷新系统状态</button><button id="metrics">查看反馈统计</button></div>
+<details open><summary>收藏 / 历史 / 系统状态</summary><pre id="tools">加载中…</pre></details>
+<script>
+'use strict';
+const byId = id => document.getElementById(id);
+const node = (tag, text, className) => { const element=document.createElement(tag); if(text!==undefined) element.textContent=String(text); if(className) element.className=className; return element; };
+const showError = error => { byId('error').textContent=error.message || String(error); };
+async function api(path, payload) {
+  const response=await fetch(path,payload===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const body=await response.json();
+  if(!response.ok) throw new Error('请求失败 ('+response.status+'): '+JSON.stringify(body.detail || body));
+  return body;
+}
+function uniqueId() {
+  if(globalThis.crypto && crypto.randomUUID) return crypto.randomUUID();
+  const bytes=new Uint8Array(16); crypto.getRandomValues(bytes); return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+}
+function sendEvent(context,businessId,kind,rating) {
+  const payload={event_id:uniqueId(), request_id:context.requestId,user_id:context.userId,business_id:businessId,event_type:kind};
+  if(rating!==undefined) payload.rating=rating;
+  return api('/api/v2/events',payload);
+}
+function addAction(container,label,handler,disabled) {
+  const button=node('button',label); button.type='button'; button.disabled=disabled;
+  button.addEventListener('click',async()=>{button.disabled=true;try{await handler();byId('notice').textContent='反馈已保存。';}catch(error){showError(error);}finally{button.disabled=disabled;}});
+  container.append(button);
+}
+function card(item,context) {
+  const article=node('article',undefined,'card');
+  article.append(node('h2',item.name),node('p',[item.city,(item.categories || []).join(' / '),'价格 '+item.price_level,'评分 '+item.rating,'距离 '+item.distance_km+' km'].join(' · '),'muted'));
+  const reasons=node('ul'); for(const reason of item.reasons || []) reasons.append(node('li',reason)); article.append(reasons);
+  article.append(node('p','证据状态：'+(item.evidence_status || 'unknown'),'tag'));
+  for(const evidence of item.evidence || []) {
+    const block=node('blockquote',undefined,'evidence');
+    block.append(node('p',evidence.excerpt || evidence.text || ''),node('small',(evidence.source || '')+' · '+(evidence.document_id || ''))); article.append(block);
+  }
+  const actions=node('div',undefined,'actions'); const disabled=!context.requestId;
+  addAction(actions,'点击 / 感兴趣',()=>sendEvent(context,item.business_id,'click'),disabled);
+  addAction(actions,'收藏',()=>sendEvent(context,item.business_id,'favorite'),disabled);
+  addAction(actions,'不喜欢',()=>sendEvent(context,item.business_id,'dislike'),disabled);
+  const rating=node('select'); rating.setAttribute('aria-label','评分'); for(let i=1;i<=5;i++){const option=node('option',i+' 星');option.value=String(i);rating.append(option);}actions.append(rating);
+  addAction(actions,'提交评分',()=>sendEvent(context,item.business_id,'rating',Number(rating.value)),disabled);
+  article.append(actions); return article;
+}
+byId('search').addEventListener('submit',async event=>{
+  event.preventDefault(); byId('error').textContent='';byId('notice').textContent='正在推荐…';byId('submit').disabled=true;
+  const userId=byId('user').value.trim() || null;
+  try {
+    const result=await api('/api/v2/recommend',{query:byId('query').value,user_id:userId,city:byId('city').value,latitude:Number(byId('lat').value),longitude:Number(byId('lon').value),radius_km:Number(byId('radius').value),max_price_level:Number(byId('price').value),top_k:Number(byId('topk').value)});
+    const context={userId,requestId:result.metadata && result.metadata.request_id};
+    const items=result.recommendations || [];byId('results').replaceChildren(...items.map(item=>card(item,context)));
+    byId('metadata').textContent=JSON.stringify(result.metadata || {},null,2);
+    byId('notice').textContent=items.length?'已展示 '+items.length+' 条推荐。':'没有符合约束的结果，请查看意图与警告。';
+    if(context.requestId) {
+      const reports=await Promise.allSettled(items.map(item=>sendEvent(context,item.business_id,'impression')));
+      const failed=reports.filter(report=>report.status==='rejected'); if(failed.length) showError(new Error('推荐已显示，但有 '+failed.length+' 条曝光反馈保存失败：'+failed[0].reason.message));
+    } else if(items.length) { byId('notice').textContent+=' 本次曝光未保存，反馈按钮不可用。'; }
+  }catch(error){showError(error);byId('notice').textContent='';}finally{byId('submit').disabled=false;}
+});
+async function tool(path) {try{byId('tools').textContent=JSON.stringify(await api(path),null,2);}catch(error){showError(error);}}
+for(const kind of ['favorites','history']) byId(kind).addEventListener('click',()=>{
+  const userId=byId('user').value.trim();if(!userId){showError(new Error('查看收藏或历史需要填写演示用户 ID；匿名反馈仍可保存。'));return;}
+  tool('/api/v2/users/'+encodeURIComponent(userId)+'/'+kind);
+});
+byId('status').addEventListener('click',()=>tool('/api/v2/system/status'));
+byId('metrics').addEventListener('click',async()=>{
+  try {
+    const data=await api('/api/v2/events/metrics');
+    const rate=data.bounded_unique_ctr===null?'暂无曝光':(100*data.bounded_unique_ctr).toFixed(1)+'%';
+    byId('tools').textContent='演示去重点击率：'+rate+'\n已点击且有展示的曝光商户：'+data.clicked_impressed_exposure_items+' / 已展示曝光商户：'+data.impressed_exposure_items+'\n按 request_id + business_id 去重；无展示的点击不进入比率。仅本地演示描述统计。\n\n'+JSON.stringify(data,null,2);
+  }catch(error){showError(error);}
+});
+tool('/api/v2/system/status');
+</script>
+</body></html>

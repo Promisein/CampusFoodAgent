@@ -38,6 +38,9 @@ def fixture_service(fixture, directory):
                 'source': 'synthetic_query_fixture'} for r in fixture['reviews']]
     for name, values in [('businesses.jsonl', businesses), ('interactions.jsonl', rows), ('representative_reviews.jsonl', reviews)]:
         (directory/name).write_text(''.join(json.dumps(v, sort_keys=True)+'\n' for v in values), encoding='utf-8')
+    manifest={'data_version':'query_fixture_v1','outputs':{
+        p.name:{'sha256':artifact_io.file_sha256(p),'bytes':p.stat().st_size} for p in sorted(directory.glob('*.jsonl'))}}
+    (directory/'data_manifest.json').write_text(json.dumps(manifest,sort_keys=True),encoding='utf-8')
     config = {'name': 'rrf_triple', 'mode': 'rrf', 'k': 60,
               'weights': dict.fromkeys(model.CHANNELS, 1), 'budgets': dict.fromkeys(model.CHANNELS, 100)}
     model_dir = directory.parent/'model'
@@ -59,7 +62,7 @@ def historical_response(request, dataset, serving):
              for row in reviews.get(r['business_id'], [])[:2]]} for r in recs]
 
 
-def run_study(cases_path, output_dir):
+def run_study(cases_path, output_dir, *, include_search=False):
     cases_path, output_dir = Path(cases_path).resolve(), Path(output_dir).resolve()
     if output_dir == cases_path.parent or output_dir in cases_path.parents or cases_path.parent in output_dir.parents:
         raise ValueError('Output must be separate from fixture inputs')
@@ -72,12 +75,18 @@ def run_study(cases_path, output_dir):
     traces, splits = [], {}
     with tempfile.TemporaryDirectory() as temporary:
         dataset, serving = fixture_service(fixture, Path(temporary)/'data')
+        search_repository=None
+        if include_search:
+            from app.retrieval.semantic import build_search_index,SearchRepository
+            search_dir=Path(temporary)/'search'
+            build_search_index(dataset.data_dir,search_dir,dimensions=4)
+            search_repository=SearchRepository(search_dir)
         for split in ('dev', 'acceptance'):
             cases = [c for c in fixture['cases'] if c['split'] == split]
             if not cases or len({c['id'] for c in fixture['cases']}) != len(fixture['cases']):
                 raise ValueError('Missing split or duplicate case IDs')
             splits[split] = {}
-            for engine in ('historical_only', 'query_v1'):
+            for engine in (('historical_only', 'query_v1', 'hybrid_search') if include_search else ('historical_only','query_v1')):
                 totals = dict(constraint_violations=0, parser_exact=0, relevance_requests=0,
                               ndcg=0., recall=0., no_result_requests=0, correct_abstentions=0,
                               evidence_returned=0, evidence_correct=0, evidence_expected=0, evidence_found=0)
@@ -85,8 +94,9 @@ def run_study(cases_path, output_dir):
                     request = RecommendationRequest(**{
                         'query': case['query'], 'user_id': 'u', 'latitude': 0, 'longitude': 0,
                         'radius_km': 10, 'top_k': 5, **case.get('request', {})})
-                    if engine == 'query_v1':
-                        response = personalized.recommend_personalized(request, dataset, serving).model_dump()
+                    if engine != 'historical_only':
+                        response = personalized.recommend_personalized(request, dataset, serving,
+                            search_repository=search_repository if engine=='hybrid_search' else None).model_dump()
                         recs = response['recommendations']
                         actual = response['metadata']['intent']
                         expected = {'include_categories': [], 'exclude_categories': [], 'soft_topics': [],
@@ -122,7 +132,7 @@ def run_study(cases_path, output_dir):
                 def ratio(n, d):
                     return n/d if d else None
                 splits[split][engine] = {**totals, 'requests': len(cases),
-                    'parser_exact_rate': ratio(totals['parser_exact'], len(cases)) if engine == 'query_v1' else None,
+                    'parser_exact_rate': ratio(totals['parser_exact'], len(cases)) if engine != 'historical_only' else None,
                     'ndcg@5': ratio(totals['ndcg'], totals['relevance_requests']),
                     'recall@5': ratio(totals['recall'], totals['relevance_requests']),
                     'abstention_accuracy': ratio(totals['correct_abstentions'], totals['no_result_requests']),
@@ -139,6 +149,9 @@ def run_study(cases_path, output_dir):
         (stage/'metrics.json').write_text(json.dumps(report, sort_keys=True, indent=2)+'\n', encoding='utf-8')
         (stage/'cases_results.json').write_text(json.dumps(traces, sort_keys=True, indent=2)+'\n', encoding='utf-8')
         modules = [query_intent, evidence, query, personalized, recommender, model, models, baselines, content, fusion, artifact_io]
+        if include_search:
+            from app.retrieval import semantic
+            modules.append(semantic)
         manifest = {'experiment_id': EXPERIMENT_ID, 'fixture_sha256': input_hash,
                     'code_sha256': {m.__name__: artifact_io.file_sha256(m.__file__) for m in modules},
                     'runner_sha256': artifact_io.file_sha256(__file__)}
@@ -150,8 +163,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--cases', type=Path, default=DEFAULT_CASES)
     parser.add_argument('--output-dir', type=Path, default=Path('data/derived/query_v1'))
+    parser.add_argument('--include-search',action='store_true',help='Evaluate BM25+LSA against the same labeled queries')
     args = parser.parse_args(argv)
-    print(json.dumps(run_study(args.cases, args.output_dir), indent=2))
+    print(json.dumps(run_study(args.cases, args.output_dir,include_search=args.include_search), indent=2))
     return 0
 
 

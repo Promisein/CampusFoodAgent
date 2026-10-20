@@ -49,7 +49,17 @@ def query_channel(request, intent, businesses, reviews, allowed, warnings):
         return []
 
 
-def recommend_anonymous(request, dataset_repository):
+def semantic_channel(repository, request, intent, businesses, allowed, warnings):
+    if repository is None or not intent.has_query_signal:
+        return []
+    try:
+        return repository.recommend(request.query,intent,businesses,allowed)
+    except (ImportError, OSError, ValueError, KeyError, TypeError):
+        warnings.append('semantic_unavailable')
+        return []
+
+
+def recommend_anonymous(request, dataset_repository, *, search_repository=None, catalog_businesses=None):
     intent = parse_intent(request.query)
     request = resolve_request(request, intent)
     metadata = query_metadata(request, intent)
@@ -68,9 +78,13 @@ def recommend_anonymous(request, dataset_repository):
     by_id = {rec.business_id: rec for rec in all_rules}
     channels = {"rule": [{"business_id": r.business_id, "score": r.score} for r in all_rules[:100]]}
     query_rows = query_channel(request, intent, {b['business_id']: b for b in rows}, reviews, set(by_id), warnings)
-    if query_rows:
+    catalog = catalog_businesses if catalog_businesses is not None else {b['business_id']:b for b in dataset_repository.load_businesses()}
+    semantic_rows = semantic_channel(search_repository,request,intent,catalog,set(by_id),warnings)
+    if semantic_rows:
+        channels['semantic']=semantic_rows
+    if query_rows or semantic_rows:
         channels['query'] = query_rows
-        fused = fuse_rrf(channels, weights={"rule": 1, "query": 2}, allowed=set(by_id))
+        fused = fuse_rrf(channels, weights={"rule": 1, "query": 2, "semantic":1}, allowed=set(by_id))
         recs = []
         for row in fused[:request.top_k]:
             rec = by_id[row['business_id']].model_copy(update={"score": row['score'], "channel_scores": row['channel_scores']})
@@ -81,10 +95,11 @@ def recommend_anonymous(request, dataset_repository):
         warnings.append("query_no_lexical_match")
     return RecommendationResponse(version="v2", engine="processed_geo_keyword_evidence",
                                   recommendations=attach_evidence(recs, request, intent, reviews),
-                                  metadata={**metadata, "warnings": warnings, "query_used_for_ranking": intent.has_query_signal})
+                                  metadata={**metadata, "warnings": warnings, "query_used_for_ranking": intent.has_query_signal,
+                                            "semantic_channel_active":bool(semantic_rows)})
 
 
-def recommend_personalized(request, dataset_repository, serving_repository):
+def recommend_personalized(request, dataset_repository, serving_repository, *, search_repository=None, ranking_repository=None):
     intent = parse_intent(request.query)
     request = resolve_request(request, intent)
     query_meta = query_metadata(request, intent)
@@ -105,7 +120,9 @@ def recommend_personalized(request, dataset_repository, serving_repository):
 
     def fallback(reason, *, bundle=None, seen=None):
         rows = [row for row in business_rows if row['business_id'] in eligible_ids and (seen is None or row['business_id'] not in seen)]
-        response = recommend_anonymous(request, LoadedDataset(rows, reviews))
+        # A model failure still permits a snapshot query index on the full catalog;
+        # rules and query outputs remain restricted to the filtered rows.
+        response = recommend_anonymous(request, LoadedDataset(rows, reviews),search_repository=search_repository,catalog_businesses=businesses)
         return RecommendationResponse(
             version="v2", engine="processed_rule_fallback",
             recommendations=response.recommendations,
@@ -138,15 +155,27 @@ def recommend_personalized(request, dataset_repository, serving_repository):
         weights['query'], budgets['query'] = 2, 100
     elif intent.has_query_signal:
         warnings.append('query_no_lexical_match')
+    semantic_rows=semantic_channel(search_repository,request,intent,businesses,allowed,warnings)
+    if semantic_rows:
+        channels['semantic']=semantic_rows
+        weights['semantic'],budgets['semantic']=1,100
     fused = fuse_rrf(channels, weights=weights, k=config["k"], budgets=budgets, allowed=allowed)
     engine = "personalized_weighted_rrf"
-    if (not profile["positive_business_ids"] and not query_rows) or (not fused and allowed):
+    if (not profile["positive_business_ids"] and not query_rows and not semantic_rows) or (not fused and allowed):
         if "popularity" not in channels:
             return fallback("all_enabled_channels_unavailable", bundle=bundle, seen=set(profile["seen_business_ids"]))
         fused = fuse_rrf({"popularity": channels["popularity"]}, allowed=allowed)
         engine = "personalized_geo_popularity"
-    elif query_rows:
+    elif query_rows or semantic_rows:
         engine = "personalized_query_rrf"
+    rank_meta={'active':False,'reason':'not_configured'}
+    if ranking_repository is not None:
+        try:
+            fused,rank_meta=ranking_repository.rerank(fused,profile,businesses,index.popularity,
+                query_active=intent.has_query_signal,recall_config=config)
+        except (ImportError,OSError,ValueError,KeyError,TypeError):
+            warnings.append('ranker_unavailable')
+            rank_meta={'active':False,'reason':'ranker_unavailable'}
     results = []
     for rec in fused[:request.top_k]:
         item = rec["business_id"]
@@ -162,6 +191,11 @@ def recommend_personalized(request, dataset_repository, serving_repository):
                      "recall sources: " + ", ".join(rec["channel_scores"])],
             evidence=[],
             channel_scores=rec["channel_scores"], reason_business_ids=rec["reason_business_ids"]))
+        if 'ranking_score' in rec:
+            results[-1].score=rec['ranking_score']
+            results[-1].ranking_score=rec['ranking_score']
+            results[-1].rrf_score=rec['rrf_score']
+            results[-1].reasons.append('LambdaRank reordering selected on validation')
     manifest = bundle["manifest"]
     return RecommendationResponse(
         version="v2", engine=engine, recommendations=attach_evidence(results, request, intent, reviews),
@@ -170,5 +204,6 @@ def recommend_personalized(request, dataset_repository, serving_repository):
                   "snapshot_cutoff": manifest["snapshot_cutoff"], "fusion_config": config["name"],
                   "selection_sha256": manifest["selection_sha256"], "warnings": sorted(set(warnings)),
                   "history_mode": "offline_snapshot", "query_used_for_ranking": intent.has_query_signal,
+                  "ranking":rank_meta,"semantic_channel_active":bool(semantic_rows),
                   "query_fusion": {"weight": 2, "k": config['k'], "budget": 100} if query_rows else None,
                   "is_open_semantics": "dataset_open_flag"})

@@ -50,7 +50,10 @@ def test_query_evidence_scoped_to_selected_business_and_concurrent_requests(tmp_
                 'review_date': '2020-01-01', 'useful': 0, 'text': 'Not quiet at all.', 'source': 'fixture'}]
     (source/'representative_reviews.jsonl').write_text(''.join(json.dumps(r)+'\n' for r in reviews))
     def run(query):
-        return client.post('/api/v2/recommend', json={**payload(), 'query': query}).json()
+        body = client.post('/api/v2/recommend', json={**payload(), 'query': query}).json()
+        # Each call now creates a distinct exposure; ranking remains deterministic.
+        assert body['metadata'].pop('request_id')
+        return body
     queries = ['咖啡 安静', '披萨'] * 5
     expected = {q: run(q) for q in set(queries)}
     with ThreadPoolExecutor(max_workers=4) as pool:

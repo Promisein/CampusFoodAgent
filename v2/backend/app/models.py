@@ -37,6 +37,8 @@ class RestaurantRecommendation(BaseModel):
     channel_scores: dict[str, dict] = Field(default_factory=dict)
     reason_business_ids: list[str] = Field(default_factory=list)
     evidence_status: str = "not_requested"
+    rrf_score: float | None = None
+    ranking_score: float | None = None
 
 
 class RecommendationResponse(BaseModel):

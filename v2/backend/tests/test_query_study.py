@@ -22,3 +22,12 @@ def test_query_study_does_not_overwrite_input(tmp_path):
     from app.evaluation.query_study import run_study, DEFAULT_CASES
     with pytest.raises(ValueError):
         run_study(DEFAULT_CASES, DEFAULT_CASES.parent)
+
+
+def test_hybrid_search_is_evaluated_with_same_fixed_queries(tmp_path):
+    from app.evaluation.query_study import run_study,DEFAULT_CASES
+    report=run_study(DEFAULT_CASES,tmp_path/'hybrid',include_search=True)
+    for split in ('dev','acceptance'):
+        result=report['splits'][split]['hybrid_search']
+        assert result['constraint_violations']==0
+        assert result['requests']==report['splits'][split]['query_v1']['requests']

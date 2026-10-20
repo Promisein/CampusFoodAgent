@@ -1,0 +1,37 @@
+{
+  "catalog_sha256": "244a79b4ed48a7920c8a30657c95ad8e4f06fc74ca64e9c29b36cb663e44bb9e",
+  "code_sha256": "4efca9d1d41e1a02393317c1c7b450fe63b55b50a08745ce18b2ad94346a111a",
+  "config": {
+    "bm25_b": 0.75,
+    "bm25_k1": 1.2,
+    "random_state": 0,
+    "rrf_k": 60
+  },
+  "dimensions": 64,
+  "inputs": {
+    "businesses.jsonl": "a3e7e91bd5edee8ccfc3a7155543dc92a0ad88adce5958c6ed0d4de4de66ceff",
+    "data_manifest.json": "0b13068e6acb97c4bf831eed7137bbf294153c5f8d377efa5487be36ca12c255",
+    "representative_reviews.jsonl": "3ff026bffba2cb1b0bac4250a3c3f105b85bfb5fe11feb2815b6cf82c0b973e4"
+  },
+  "model_version": "search_v1",
+  "outputs": {
+    "arrays.npz": {
+      "bytes": 21448888,
+      "sha256": "0f2ad8e152f690a6716998e13a17f9b9cd27b0846ea55695cb9f7fd38aa6caa2"
+    },
+    "vocabulary.json": {
+      "bytes": 426149,
+      "sha256": "fa7e68c4219e321f4b5ecb6f739c5e559a21c6b3b53a0979c9eb95be5e5481fc"
+    }
+  },
+  "query_code_sha256": "430a30f8d65042c9d75335f0091d7367b982d3862d541363ce3aa82a383fe2ec",
+  "representation": "BM25 + TF-IDF/SVD LSA; not pretrained",
+  "requested_dimensions": 64,
+  "review_count": 29092,
+  "review_sources": {
+    "yelp_review": 29092
+  },
+  "source_data_version": "yelp_open_dataset_local",
+  "usage": "present_query_only",
+  "vocabulary_size": 38265
+}

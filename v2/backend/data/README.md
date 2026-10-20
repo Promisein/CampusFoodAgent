@@ -1,5 +1,7 @@
 # CampusFoodAgent v2 数据取舍说明
 
+推荐闭环新增derived/search_v1（BM25/LSA当前语料索引）、ranking_v1（早期历史训练、validation选择、迭代test排序模型）、demo_events（本地SQLite曝光反馈）。原processed/serving及既往实验不覆盖；事件不自动混入历史训练，测试使用临时事件库。重建与运行见20文档，聚合验收见21文档。
+
 本文档说明本项目如何从 Yelp Open Dataset 中取舍数据，并解释每类数据进入或不进入首版链路的原因。
 
 ## 目标

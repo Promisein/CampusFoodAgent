@@ -97,7 +97,9 @@ API 响应 → Web / 小程序
 
 本阶段同日完成：RRF/加权RRF、validation选择冻结、全量融合回放、serving_v1画像导出与可选user_id在线三路推荐、通道降级和并发隔离。115项测试通过；详情见[16实施记录](v2/docs/16-融合优化与在线个性化实施记录.md)和[17实验报告](v2/docs/17-融合与在线个性化实验报告.md)。后续进度见下一段。
 
-查询与证据阶段同日完成：有限中英文查询解析、文本/字段约束交集、查询与历史RRF、商户内相关评论检索，以及22个固定合成场景和真实API审计；157项测试通过。详见[18实施记录](v2/docs/18-查询理解与证据检索实施记录.md)、[19评测报告](v2/docs/19-查询与证据评测报告.md)。向量语义、证据立场理解、LightGBM及受控Agent仍待实现。
+查询与证据阶段同日完成：有限中英文查询解析、文本/字段约束交集、查询与历史RRF、商户内相关评论检索，以及22个固定合成场景和真实API审计；当时157项测试通过。详见[18实施记录](v2/docs/18-查询理解与证据检索实施记录.md)、[19评测报告](v2/docs/19-查询与证据评测报告.md)。最终收尾进度见下一段。
+
+推荐系统本地闭环已完成：BM25＋64维LSA混合检索、LightGBM LambdaRank及validation启用选择、曝光/点击/收藏/评分、SQLite幂等与归属、本地浏览器演示。完整矩阵见[20实施记录](v2/docs/20-推荐系统完整闭环实施记录.md)、真实结果见[21验收报告](v2/docs/21-推荐系统最终验收与排序实验报告.md)。生产部署与多轮Agent属于独立扩展。
 
 ## 2.1 三个子系统的职责边界
 
@@ -153,6 +155,8 @@ as_of_time 用户画像快照（Validation 用 Train；Test 用 Train + Validati
 时间约束：对任一目标交互 t，画像、协同统计与文本证据只能使用 `(event_time, interaction_id) < t` 的历史，禁止未来信息泄漏。
 
 ## 2.4 在线服务链路
+
+当前完整请求已加入BM25/LSA、RRF、验证选择的LambdaRank及曝光反馈，详见20文档；下图和规则公式保留说明基础评分组件。
 
 ```text
 Tampa processed 数据
@@ -281,8 +285,9 @@ npm run dev
 
 ```powershell
 cd v2\backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8100
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8100
 ```
 
 接口：`/api/v2/health`、`/api/v2/dataset/status`、`/api/v2/recommend`、`/docs`。

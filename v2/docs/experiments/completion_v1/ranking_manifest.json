@@ -1,0 +1,68 @@
+{
+  "candidate_policy": {
+    "city_preference": {
+      "content": 0.1,
+      "itemcf": 0.5,
+      "popularity": 1
+    },
+    "simulated_geo": {
+      "content": 1,
+      "itemcf": 1,
+      "popularity": 1
+    }
+  },
+  "catalog_count": 3805,
+  "catalog_sha256": "244a79b4ed48a7920c8a30657c95ad8e4f06fc74ca64e9c29b36cb663e44bb9e",
+  "code_sha256": {
+    "app.artifact_io": "abdf1be79f645662bd956273175d8427e7e181c5704bd9722248b2a41ebad888",
+    "app.ranking.fusion": "e3d8f5c29b02da3c178a1e1ef98ca105e6616ca674b4673590743223ced6b0d1",
+    "app.ranking.learned": "30d869d879d2e96dc34e0f6a447f56d3ef94443aa7ee34ce96da8d82dd07f3e0",
+    "app.retrieval.baselines": "be18d80eb66e6cc93c4044c082e5462b3fb54fc05133bf95c89584557c64f21c",
+    "app.retrieval.content": "e568b0e4fa345ae76ac573723cff3f1f81732ab0db18faede58e3c9a32d72552"
+  },
+  "experiment_id": "ranking_v1",
+  "feature_schema": [
+    "rrf_score",
+    "pop_rank",
+    "cf_rank",
+    "content_rank",
+    "cf_score",
+    "content_score",
+    "historical_popularity",
+    "positive_user_count",
+    "historical_bayesian_rating",
+    "history_count",
+    "positive_seed_count",
+    "category_affinity",
+    "price_affinity"
+  ],
+  "inputs": {
+    "businesses.jsonl": "a3e7e91bd5edee8ccfc3a7155543dc92a0ad88adce5958c6ed0d4de4de66ceff",
+    "interactions.jsonl": "82cbd610ad4389fc5e81690166cb49c54a6d61051e977f32893bfe6f86a391c8"
+  },
+  "library_versions": {
+    "lightgbm": "4.6.0",
+    "numpy": "2.2.6"
+  },
+  "outputs": {
+    "metrics.json": {
+      "bytes": 20934,
+      "sha256": "144f4f92fbedd63a4fa4ef68e50303f5be9b6851f8e6ff9d454de0687e1827ce"
+    },
+    "model.txt": {
+      "bytes": 74975,
+      "sha256": "5f87b283c8bc8170512190872c9065d4c73635d40499c713423ad13f08ae6ed5"
+    },
+    "selection.json": {
+      "bytes": 68,
+      "sha256": "b902cd2a53a6bc2d9b73da79478f0156545fce9df4b0968d07b07fa72687e504"
+    }
+  },
+  "runner_sha256": "ecc6dc01ae9c834d8cd35581bedd1866ed490069129a2184298679a0a2af6bee",
+  "scope": "aggregate manifest excerpt; full catalog and model remain in local derived/ranking_v1",
+  "selection_sha256": "587f09d92530f805d59b30e4dc03a964fe23cc11ba0f6f24e35c99c41d714df0",
+  "source_manifest_sha256": "05667b7e689cb7fb351a3e3b74d1705d4bf744e4c50cc14b89db62599f745d1a",
+  "test_cutoff": "2019-05-30 23:02:52",
+  "training_cutoff": "2016-01-01 00:00:00",
+  "validation_cutoff": "2017-11-08 20:34:02"
+}

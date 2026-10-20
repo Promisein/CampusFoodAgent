@@ -1,0 +1,29 @@
+{
+  "code_sha256": {
+    "app.artifact_io": "abdf1be79f645662bd956273175d8427e7e181c5704bd9722248b2a41ebad888",
+    "app.evidence": "3382c1e3b6cdd9a450e58f2025cbc2757b2da09de4545a8c767782465e5a9b08",
+    "app.models": "c684fcb764df71c40062c9deb910242112b3b4c1ffb8de623d7bb32ba1245acc",
+    "app.personalized": "2af3123ed63813aa86c118040f1673099bb08cebf9876445643a5dc4b843e4c0",
+    "app.query_intent": "430a30f8d65042c9d75335f0091d7367b982d3862d541363ce3aa82a383fe2ec",
+    "app.ranking.fusion": "e3d8f5c29b02da3c178a1e1ef98ca105e6616ca674b4673590743223ced6b0d1",
+    "app.recommender": "cfd4697c0d60731513b008817b817ca8a33d305e8d92ca791994e641b354f25e",
+    "app.retrieval.baselines": "be18d80eb66e6cc93c4044c082e5462b3fb54fc05133bf95c89584557c64f21c",
+    "app.retrieval.content": "e568b0e4fa345ae76ac573723cff3f1f81732ab0db18faede58e3c9a32d72552",
+    "app.retrieval.query": "244d37606a094b47ae91e12642ef599cd38032edf8af1837c4b626cc9271bc54",
+    "app.retrieval.semantic": "4efca9d1d41e1a02393317c1c7b450fe63b55b50a08745ce18b2ad94346a111a",
+    "app.serving.model": "674a4558d109e9bcb3cd9eadd39c79ce10209a8470418bc6862041fc444e894b"
+  },
+  "experiment_id": "query_v1",
+  "fixture_sha256": "0eee52e081ceb9c5a519bb2c06ee091b6a07f1c348f2845a1f9b23bf7f47547e",
+  "outputs": {
+    "cases_results.json": {
+      "bytes": 18685,
+      "sha256": "c04b7324a04e16bcd0144f024e18fa694804bb5650376120c34f6ea7e96dcadd"
+    },
+    "metrics.json": {
+      "bytes": 4056,
+      "sha256": "df8f1af1c9e24956aa211b69b906af3c9c3c6f16c4d29e85f037fd227f0996f8"
+    }
+  },
+  "runner_sha256": "c32a02ed7a20ac1b7010981f3d4e5ebb30be00af093658372e3bd4b307893e60"
+}
