@@ -1,0 +1,48 @@
+{
+  "api_smoke": {
+    "all_constraints_and_evidence_ownership": "passed",
+    "clarification_requests": 10,
+    "concurrent_requests": 12,
+    "concurrent_serial_parity": "passed",
+    "evidence_documents": 357,
+    "processed_inputs_sha256": {
+      "businesses.jsonl": "a3e7e91bd5edee8ccfc3a7155543dc92a0ad88adce5958c6ed0d4de4de66ceff",
+      "interactions.jsonl": "8ff1a1555c246dd3c44c58c036e05adc1da03ba7fbd118b12dbc8d50e6de4cc7",
+      "representative_reviews.jsonl": "3ff026bffba2cb1b0bac4250a3c3f105b85bfb5fe11feb2815b6cf82c0b973e4"
+    },
+    "query_change_pairs": 10,
+    "requests": 60,
+    "results": 250,
+    "scope": "current Tampa snapshot synthetic requests, no real relevance labels or CTR",
+    "seconds": 13.835,
+    "serving_manifest_sha256": "a4c5400bc227edc928d096f2565aba3b5af1a503d081b176509ab890b21ecfd3",
+    "soft_insufficient": 28,
+    "soft_related_mentions": 22
+  },
+  "existing_history_and_serving_snapshot_reused": true,
+  "fixed_cases": {
+    "acceptance": 12,
+    "dev": 10,
+    "is_independent_blind_test": false
+  },
+  "independent_review": "numeric constraints fixed; 38 targeted parser/API tests passed on review; no remaining important finding",
+  "pip_check": "No broken requirements found",
+  "replay": {
+    "identical": true,
+    "output_sha256": {
+      "cases_results.json": "826142e10c8ca37599b9e05c9882e5f5aa4f63c8bb1707c869e8d3fcf419bdf1",
+      "experiment_manifest.json": "167db8bd553253e65c2e52813d87cde85a8b83016c14216c2d5370118e42f1b5",
+      "metrics.json": "b8269957f1c0b5f3535361f1354c672e5802aea110fa023695e725f604106f93"
+    }
+  },
+  "runtime_code_sha256": {
+    "app/evidence.py": "3382c1e3b6cdd9a450e58f2025cbc2757b2da09de4545a8c767782465e5a9b08",
+    "app/main.py": "6a04a2d5f09ff6fe3b40a544b23dabe60fbb1d18701dc0c3560b95d119851b4f",
+    "app/models.py": "56142835cb1d5ce679d57802184ed19dc9096b36a42d59219452624ca88243d3",
+    "app/personalized.py": "bfb68ec88b94a990b18e4ed86e4595dff6697bf3d225379e6776e94a7d26b160",
+    "app/query_intent.py": "430a30f8d65042c9d75335f0091d7367b982d3862d541363ce3aa82a383fe2ec",
+    "app/retrieval/query.py": "244d37606a094b47ae91e12642ef599cd38032edf8af1837c4b626cc9271bc54",
+    "app/serving/model.py": "674a4558d109e9bcb3cd9eadd39c79ce10209a8470418bc6862041fc444e894b"
+  },
+  "tests": 157
+}

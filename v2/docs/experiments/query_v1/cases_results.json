@@ -1,0 +1,926 @@
+[
+  {
+    "case_id": "d-coffee",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-pizza",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-quiet",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-radius",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-price",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-conflict",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-money",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-exclusion",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-no-match",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-negative",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-coffee",
+    "engine": "query_v1",
+    "evidence": {
+      "c1": [
+        "c1-quiet"
+      ],
+      "c2": [
+        "c2-loud"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-pizza",
+    "engine": "query_v1",
+    "evidence": {
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": []
+    },
+    "ids": [
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-quiet",
+    "engine": "query_v1",
+    "evidence": {
+      "c1": [
+        "c1-quiet"
+      ],
+      "c2": []
+    },
+    "ids": [
+      "c1",
+      "c2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-radius",
+    "engine": "query_v1",
+    "evidence": {
+      "p1": [
+        "p1-quiet-negative"
+      ]
+    },
+    "ids": [
+      "p1"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-price",
+    "engine": "query_v1",
+    "evidence": {
+      "p2": []
+    },
+    "ids": [
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-conflict",
+    "engine": "query_v1",
+    "evidence": {},
+    "ids": [],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-money",
+    "engine": "query_v1",
+    "evidence": {},
+    "ids": [],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-exclusion",
+    "engine": "query_v1",
+    "evidence": {
+      "c1": [
+        "c1-quiet"
+      ],
+      "c2": [
+        "c2-loud"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-no-match",
+    "engine": "query_v1",
+    "evidence": {},
+    "ids": [],
+    "split": "dev"
+  },
+  {
+    "case_id": "d-negative",
+    "engine": "query_v1",
+    "evidence": {
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": []
+    },
+    "ids": [
+      "p1",
+      "p2"
+    ],
+    "split": "dev"
+  },
+  {
+    "case_id": "a-coffee-en",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-burger",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-vegan",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-empty-intersection",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-typed-tight",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "v1": [
+        "v1-food"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "v1"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-allergy",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-hours",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-no-sushi",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-outdoor",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-conversation",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-cold",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "seed": []
+    },
+    "ids": [
+      "seed",
+      "c1",
+      "c2",
+      "b1",
+      "p1"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-unresolved",
+    "engine": "historical_only",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ],
+      "c1": [
+        "c1-quiet",
+        "c1-patio"
+      ],
+      "c2": [
+        "c2-loud"
+      ],
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": [
+        "p2-date"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2",
+      "b1",
+      "p1",
+      "p2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-coffee-en",
+    "engine": "query_v1",
+    "evidence": {
+      "c1": [
+        "c1-quiet"
+      ],
+      "c2": [
+        "c2-loud"
+      ]
+    },
+    "ids": [
+      "c1",
+      "c2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-burger",
+    "engine": "query_v1",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ]
+    },
+    "ids": [
+      "b1"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-vegan",
+    "engine": "query_v1",
+    "evidence": {
+      "v1": [
+        "v1-food"
+      ]
+    },
+    "ids": [
+      "v1"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-empty-intersection",
+    "engine": "query_v1",
+    "evidence": {},
+    "ids": [],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-typed-tight",
+    "engine": "query_v1",
+    "evidence": {
+      "p1": [
+        "p1-quiet-negative"
+      ]
+    },
+    "ids": [
+      "p1"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-allergy",
+    "engine": "query_v1",
+    "evidence": {},
+    "ids": [],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-hours",
+    "engine": "query_v1",
+    "evidence": {},
+    "ids": [],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-no-sushi",
+    "engine": "query_v1",
+    "evidence": {
+      "b1": [
+        "b1-food"
+      ]
+    },
+    "ids": [
+      "b1"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-outdoor",
+    "engine": "query_v1",
+    "evidence": {
+      "c1": [
+        "c1-patio"
+      ],
+      "c2": []
+    },
+    "ids": [
+      "c1",
+      "c2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-conversation",
+    "engine": "query_v1",
+    "evidence": {
+      "c1": [
+        "c1-quiet"
+      ],
+      "c2": []
+    },
+    "ids": [
+      "c1",
+      "c2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-cold",
+    "engine": "query_v1",
+    "evidence": {
+      "p1": [
+        "p1-quiet-negative"
+      ],
+      "p2": []
+    },
+    "ids": [
+      "p1",
+      "p2"
+    ],
+    "split": "acceptance"
+  },
+  {
+    "case_id": "a-unresolved",
+    "engine": "query_v1",
+    "evidence": {},
+    "ids": [],
+    "split": "acceptance"
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "code_sha256": {
+    "app.artifact_io": "abdf1be79f645662bd956273175d8427e7e181c5704bd9722248b2a41ebad888",
+    "app.evidence": "3382c1e3b6cdd9a450e58f2025cbc2757b2da09de4545a8c767782465e5a9b08",
+    "app.models": "56142835cb1d5ce679d57802184ed19dc9096b36a42d59219452624ca88243d3",
+    "app.personalized": "bfb68ec88b94a990b18e4ed86e4595dff6697bf3d225379e6776e94a7d26b160",
+    "app.query_intent": "430a30f8d65042c9d75335f0091d7367b982d3862d541363ce3aa82a383fe2ec",
+    "app.ranking.fusion": "e3d8f5c29b02da3c178a1e1ef98ca105e6616ca674b4673590743223ced6b0d1",
+    "app.recommender": "cfd4697c0d60731513b008817b817ca8a33d305e8d92ca791994e641b354f25e",
+    "app.retrieval.baselines": "be18d80eb66e6cc93c4044c082e5462b3fb54fc05133bf95c89584557c64f21c",
+    "app.retrieval.content": "e568b0e4fa345ae76ac573723cff3f1f81732ab0db18faede58e3c9a32d72552",
+    "app.retrieval.query": "244d37606a094b47ae91e12642ef599cd38032edf8af1837c4b626cc9271bc54",
+    "app.serving.model": "674a4558d109e9bcb3cd9eadd39c79ce10209a8470418bc6862041fc444e894b"
+  },
+  "experiment_id": "query_v1",
+  "fixture_sha256": "0eee52e081ceb9c5a519bb2c06ee091b6a07f1c348f2845a1f9b23bf7f47547e",
+  "outputs": {
+    "cases_results.json": {
+      "bytes": 14365,
+      "sha256": "826142e10c8ca37599b9e05c9882e5f5aa4f63c8bb1707c869e8d3fcf419bdf1"
+    },
+    "metrics.json": {
+      "bytes": 2868,
+      "sha256": "b8269957f1c0b5f3535361f1354c672e5802aea110fa023695e725f604106f93"
+    }
+  },
+  "runner_sha256": "76a000e3b57c2ea58f6898e223b0e4bd993b1e60e475481280798fdc5c53ebb5"
+}

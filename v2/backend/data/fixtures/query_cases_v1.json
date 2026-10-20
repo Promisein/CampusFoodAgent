@@ -1,0 +1,47 @@
+{
+  "version": "query_cases_v1",
+  "scope": "handwritten synthetic functional scenarios; relevance is not real Yelp behavior",
+  "businesses": [
+    {"id": "seed", "category": "Coffee & Tea", "latitude": 0, "price": 1},
+    {"id": "c1", "category": "Coffee & Tea", "latitude": 0.005, "price": 1},
+    {"id": "c2", "category": "Coffee & Tea", "latitude": 0.01, "price": 2},
+    {"id": "p1", "category": "Pizza", "latitude": 0.01, "price": 2},
+    {"id": "p2", "category": "Pizza", "latitude": 0.03, "price": 1},
+    {"id": "b1", "category": "Burgers", "latitude": 0.01, "price": 1},
+    {"id": "v1", "category": "Vegan", "latitude": 0.01, "price": 2},
+    {"id": "closed", "category": "Pizza", "latitude": 0.01, "price": 1, "is_open": false}
+  ],
+  "reviews": [
+    {"id": "c1-quiet", "business": "c1", "text": "A quiet place for conversation. Coffee is good."},
+    {"id": "c1-patio", "business": "c1", "text": "The patio has outdoor seating."},
+    {"id": "c2-loud", "business": "c2", "text": "Very loud music. Delicious coffee."},
+    {"id": "p1-quiet-negative", "business": "p1", "text": "It is not quiet. The pizza tastes good."},
+    {"id": "p2-date", "business": "p2", "text": "A romantic place for date night."},
+    {"id": "b1-food", "business": "b1", "text": "Excellent burgers."},
+    {"id": "v1-food", "business": "v1", "text": "Vegan food and friendly service."}
+  ],
+  "cases": [
+    {"id": "d-coffee", "split": "dev", "query": "咖啡", "intent": {"include_categories": ["coffee"]}, "allowed": ["c1", "c2"], "relevant": ["c1", "c2"]},
+    {"id": "d-pizza", "split": "dev", "query": "想吃披萨", "intent": {"include_categories": ["pizza"]}, "allowed": ["p1", "p2"], "relevant": ["p1", "p2"]},
+    {"id": "d-quiet", "split": "dev", "query": "安静的咖啡店", "intent": {"include_categories": ["coffee"], "soft_topics": ["quiet"]}, "allowed": ["c1", "c2"], "relevant": ["c1"], "evidence": {"c1": ["c1-quiet"], "c2": []}},
+    {"id": "d-radius", "split": "dev", "query": "pizza within 2 km", "intent": {"include_categories": ["pizza"], "radius_km": 2.0}, "allowed": ["p1"], "relevant": ["p1"]},
+    {"id": "d-price", "split": "dev", "query": "披萨 价格等级1", "intent": {"include_categories": ["pizza"], "max_price_level": 1}, "allowed": ["p2"], "relevant": ["p2"]},
+    {"id": "d-conflict", "split": "dev", "query": "披萨，不要披萨", "intent": {"include_categories": ["pizza"], "exclude_categories": ["pizza"], "needs_clarification": true}, "allowed": [], "relevant": []},
+    {"id": "d-money", "split": "dev", "query": "预算20元", "intent": {"needs_clarification": true}, "allowed": [], "relevant": []},
+    {"id": "d-exclusion", "split": "dev", "query": "coffee, no pizza", "intent": {"include_categories": ["coffee"], "exclude_categories": ["pizza"]}, "allowed": ["c1", "c2"], "relevant": ["c1", "c2"]},
+    {"id": "d-no-match", "split": "dev", "query": "寿司", "intent": {"include_categories": ["sushi"]}, "allowed": [], "relevant": []},
+    {"id": "d-negative", "split": "dev", "query": "披萨 安静", "intent": {"include_categories": ["pizza"], "soft_topics": ["quiet"]}, "allowed": ["p1", "p2"], "relevant": ["p1"], "evidence": {"p1": ["p1-quiet-negative"], "p2": []}, "note": "relevance means a mention, not a quietness guarantee"},
+    {"id": "a-coffee-en", "split": "acceptance", "query": "cafe please", "intent": {"include_categories": ["coffee"]}, "allowed": ["c1", "c2"], "relevant": ["c1", "c2"]},
+    {"id": "a-burger", "split": "acceptance", "query": "汉堡", "intent": {"include_categories": ["burgers"]}, "allowed": ["b1"], "relevant": ["b1"]},
+    {"id": "a-vegan", "split": "acceptance", "query": "纯素", "intent": {"include_categories": ["vegan"]}, "allowed": ["v1"], "relevant": ["v1"]},
+    {"id": "a-empty-intersection", "split": "acceptance", "query": "披萨 价格等级1 2公里内", "intent": {"include_categories": ["pizza"], "max_price_level": 1, "radius_km": 2.0}, "allowed": [], "relevant": []},
+    {"id": "a-typed-tight", "split": "acceptance", "query": "pizza within 20 km", "request": {"radius_km": 2}, "intent": {"include_categories": ["pizza"], "radius_km": 20.0}, "allowed": ["p1"], "relevant": ["p1"]},
+    {"id": "a-allergy", "split": "acceptance", "query": "peanut allergy", "intent": {"needs_clarification": true}, "allowed": [], "relevant": []},
+    {"id": "a-hours", "split": "acceptance", "query": "现在营业的披萨", "intent": {"include_categories": ["pizza"], "needs_clarification": true}, "allowed": [], "relevant": []},
+    {"id": "a-no-sushi", "split": "acceptance", "query": "no sushi, burgers please", "intent": {"include_categories": ["burgers"], "exclude_categories": ["sushi"]}, "allowed": ["b1"], "relevant": ["b1"]},
+    {"id": "a-outdoor", "split": "acceptance", "query": "咖啡 户外", "intent": {"include_categories": ["coffee"], "soft_topics": ["outdoor"]}, "allowed": ["c1", "c2"], "relevant": ["c1"], "evidence": {"c1": ["c1-patio"], "c2": []}},
+    {"id": "a-conversation", "split": "acceptance", "query": "coffee conversation", "intent": {"include_categories": ["coffee"], "soft_topics": ["conversation"]}, "allowed": ["c1", "c2"], "relevant": ["c1"], "evidence": {"c1": ["c1-quiet"], "c2": []}},
+    {"id": "a-cold", "split": "acceptance", "query": "pizza", "request": {"user_id": "unknown"}, "intent": {"include_categories": ["pizza"]}, "allowed": ["p1", "p2"], "relevant": ["p1", "p2"]},
+    {"id": "a-unresolved", "split": "acceptance", "query": "只要火星菜", "intent": {"needs_clarification": true}, "allowed": [], "relevant": []}
+  ]
+}

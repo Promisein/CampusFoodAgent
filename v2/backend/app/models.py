@@ -16,6 +16,10 @@ class EvidenceItem(BaseModel):
     document_id: str
     source: str
     text: str
+    business_id: str | None = None
+    excerpt: str | None = None
+    matched_terms: list[str] = Field(default_factory=list)
+    relevance_score: float = 0
 
 
 class RestaurantRecommendation(BaseModel):
@@ -32,6 +36,7 @@ class RestaurantRecommendation(BaseModel):
     evidence: list[EvidenceItem]
     channel_scores: dict[str, dict] = Field(default_factory=dict)
     reason_business_ids: list[str] = Field(default_factory=list)
+    evidence_status: str = "not_requested"
 
 
 class RecommendationResponse(BaseModel):

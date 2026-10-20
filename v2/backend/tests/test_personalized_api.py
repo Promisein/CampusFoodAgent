@@ -18,7 +18,8 @@ def setup_service(tmp_path, monkeypatch):
 
 
 def payload(user="u"):
-    return {"query": "coffee", "user_id": user, "latitude": 0, "longitude": 0,
+    # These tests isolate the frozen historical pipeline; query behavior has its own suite.
+    return {"query": "附近推荐", "user_id": user, "latitude": 0, "longitude": 0,
             "radius_km": 10, "max_price_level": 2, "top_k": 5}
 
 

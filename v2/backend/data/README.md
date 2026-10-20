@@ -274,3 +274,5 @@ outputs
 
 
 2026年10月20日本阶段新增`derived/fusion_v1/`（validation选参冻结、融合回放）和`derived/serving_v1/`（120,220个全历史用户画像及三路模型）。在线商户与代表评论仍取processed；个性化请求只读serving快照，不现场训练或读取全量Review。构建命令、快照边界和重载方式见16文档；聚合结果见17文档。画像/模型/用户级trace保持本地，不提交Git。
+
+查询阶段新增版本化小型人工数据`fixtures/query_cases_v1.json`和`derived/query_v1`评测产物。不需要复制或覆盖processed、完整交互或serving快照；真实历史数据不用于捏造查询标签。复现：`python -B -m app.evaluation.query_study`，见18/19文档。

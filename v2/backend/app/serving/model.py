@@ -174,11 +174,12 @@ class ServingRepository:
 class RequestRecallIndex(content.ContentIndex):
     """Use immutable shared model tables with fresh caches for every API request."""
 
-    def __init__(self, bundle, businesses, request):
+    def __init__(self, bundle, businesses, request, *, allowed_ids=None):
         manifest = bundle["manifest"]
         if set(manifest["catalog_ids"]) != set(businesses):
             raise ValueError("Model/business universe mismatch")
         self.businesses, self.request = businesses, request
+        self.allowed_ids = allowed_ids
         self.cutoff = manifest["snapshot_cutoff"]
         self.profiles, self.popularity, self.neighbors = bundle["profiles"], bundle["popularity"], bundle["neighbors"]
         self.item_vectors, self.idf, self._postings = bundle["content"]["item_vectors"], bundle["content"]["idf"], bundle["postings"]
@@ -191,6 +192,8 @@ class RequestRecallIndex(content.ContentIndex):
         seen = set(self.profile(user_id)["seen_business_ids"])
         allowed, distances = set(), {}
         for item, business in self.businesses.items():
+            if self.allowed_ids is not None and item not in self.allowed_ids:
+                continue
             price, coords = business.get("price_level"), baselines._coordinates(business)
             if (item in seen or not business.get("is_open") or business["city"].lower() != self.request.city.lower()
                     or price not in (1, 2, 3, 4) or price > self.request.max_price_level or coords is None):
