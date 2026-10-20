@@ -4,7 +4,7 @@
 >
 > 重构方案依据日期：2026年6月18日
 >
-> 当前版本：在线 API `v0.5.0`；推荐闭环＋受控RAG `rag_v1`；DeepSeek真实接入待本地填写密钥
+> 当前版本：在线 API `v0.5.0`；推荐闭环＋受控RAG `rag_v1`；用户已提供成功的DeepSeek接入实测
 
 CampusFoodAgent v2 是一个基于 Yelp 真实商户、评论和历史交互数据重构的城市餐饮推荐项目。项目目标是把地理硬约束、个性化推荐、证据检索和受控 Agent 编排组合成可运行、可解释、可追溯的餐饮决策系统。
 
@@ -441,14 +441,14 @@ request -> intent schema -> hard filters -> parallel recall
 | 规划路径 | 职责 | 状态 |
 | --- | --- | --- |
 | `backend/app/data_pipeline/` | Yelp 导入、城市筛选和数据整理 | 已有首版 |
-| `backend/app/profiles/` | 画像快照、版本和只读仓库 | 离线首版已完成；在线接入未完成 |
+| `backend/app/profiles/` | 画像快照、版本和只读仓库 | 已完成并接入在线服务 |
 | `backend/app/retrieval/` | 热门、ItemCF、类别、词汇及BM25/LSA混合检索 | 已实现 |
 | `backend/app/ranking/` | RRF/加权RRF、历史特征、LambdaRank及validation启用 | 已实现 |
 | `backend/app/serving/` | 版本化全历史画像模型导出与在线只读加载 | 已接入可选user_id |
-| `backend/app/rag/` | 文档构建、混合检索和证据包 | 规划中 |
+| `backend/app/rag/` | 商户内BM25句子检索、结构化计划、校验与受控渲染 | rag_v1已实现，用户已提供成功联网样例 |
 | `backend/app/agent/` | 意图 schema、工具、状态和编排 | 规划中 |
-| `backend/app/events/` | impression、click、favorite、dislike、rating | 规划中 |
-| `backend/app/evaluation/` | 全局时间回放、召回指标与分群已实现；RAG/Agent待实现 | 离线推荐评估已实现 |
+| `backend/app/events.py` | impression、click、favorite、dislike、rating | 本地SQLite事件闭环已实现 |
+| `backend/app/evaluation/` | 时间回放、召回/排序/查询评估及RAG离线契约评测 | 已实现；真实查询质量标注与Agent评估待扩展 |
 
 ## 推荐、RAG 与 Agent 的职责边界
 
@@ -458,7 +458,7 @@ request -> intent schema -> hard filters -> parallel recall
 
 营业时间的后续实现还需要处理跨午夜、时区和缺失值。缺少营业数据时应标记“状态未知”，不能自动解释为正在营业。
 
-### 2. 多路召回与排序（离线三通道已实现，学习排序规划中）
+### 2. 多路召回与排序（已实现，学习排序按验证结果启用）
 
 离线现状：`retrieval/baselines.py`已实现历史热门、ItemCF、模拟地理过滤及交替合并；`retrieval/content.py`已实现类别TF-IDF与价格匹配；`evaluation/content_study.py`已完成完整交互共同目标对照。三路合并不稳定优于双路，保留双路作为比较基准。本阶段已完成RRF与在线接入，配置仅由validation选择。本阶段又完成有限规则查询与词汇检索融合。以下为完整目标，当前还实现BM25/LSA及验证选择的LightGBM；时间衰减与预训练向量模型留待有标注后比较。
 
@@ -477,7 +477,9 @@ source_rank, distance_km, hard_filter_snapshot,
 reason_business_ids, model_or_index_version
 ```
 
-### 3. RAG（规划中）
+### 3. RAG（受控首版已实现，以下为扩展目标）
+
+当前实现为Top K商户内BM25句子检索、事实/引用上下文、DeepSeek结构化计划、严格ID归属校验及中文受控渲染。商户搜索另有BM25/LSA混合检索，但RAG证据层尚未实现下述三类文档的独立向量检索与专门reranker。详见22/23文档。
 
 每个商户建立三类文档：
 
@@ -589,8 +591,8 @@ reason_business_ids, model_or_index_version
 | --- | --- | --- | --- |
 | 第 5 周：真实数据替换 | Yelp 版本、许可、单城市筛选、统一 schema、时间切分 | manifest、过滤统计、可追溯 ID | 数据整理、在线接入和时间切分已完成 |
 | 第 6 周：画像与推荐 | `as_of_time`画像、多路召回、RRF、LightGBM | 推荐主实验、消融、冷用户分群 | 完整交互、画像、三路召回、RRF、验证集选参及在线接入已完成；查询词汇基线和相关证据检索已完成；BM25/LSA、学习排序、曝光反馈与本地演示已完成；生产流量实验与独立Agent为扩展 |
-| 第 7 周：RAG 与工具 | 三类文档、混合检索、六个工具、白名单与降级 | RAG 评测、工具回归、证据包 | 规划中 |
-| 第 8 周：反馈与展示 | 五类事件、演示画像、故障注入、延迟测试、前端 | 三分钟演示、报告和完整 README | 规划中 |
+| 第 7 周：RAG 与工具 | 三类文档、混合检索、六个工具、白名单与降级 | RAG 评测、工具回归、证据包 | 受控RAG、白名单、降级与17场景离线验收已完成；用户已实测接入；三类文档完整检索与独立Agent待扩展 |
+| 第 8 周：反馈与展示 | 五类事件、演示画像、故障注入、延迟测试、前端 | 三分钟演示、报告和完整 README | 本地五类事件、演示页与故障回归已完成；生产反馈学习、真实延迟与批量质量评估待扩展 |
 
 ### 优先级
 
@@ -709,7 +711,7 @@ flowchart LR
 | [20-完整闭环](docs/20-推荐系统完整闭环实施记录.md) | 最终完成矩阵、模型、事件、界面及运行 |
 | [21-最终验收](docs/21-推荐系统最终验收与排序实验报告.md) | 真实LambdaRank结果、选择、混合检索对照及完整审计 |
 | [22-DeepSeek受控RAG](docs/22-DeepSeek受控RAG接入与配置.md) | .env密钥位置、检索/计划/校验/渲染与降级 |
-| [23-RAG验收](docs/23-RAG离线验收与边界报告.md) | 无真实密钥的离线契约与真实数据模板审计 |
+| [23-RAG验收](docs/23-RAG离线验收与边界报告.md) | 离线契约、真实数据模板审计、用户联网实测与收尾边界 |
 
 ## 文档维护规则
 
@@ -750,4 +752,4 @@ C:\Users\Jianing\Desktop\面试\项目重构方案\06-统一路线与面试策�
 
 最终演示：在v2/backend运行`.\.venv\Scripts\python.exe -B -m uvicorn app.main:app --host 127.0.0.1 --port 8100`，浏览器打开http://127.0.0.1:8100/demo。安装新模型依赖与构建命令以20文档为准；查询请求保留查询融合，历史排序只在无查询信号且通过validation门槛时启用。
 
-受控RAG已实现：在`backend/.env`的`DEEPSEEK_API_KEY=`后填写本机密钥；`generate_answer=true`或演示页勾选选项后启用。模型仅选择事实/引用ID，中文回答由程序受控渲染。当前0次真实DeepSeek调用，填写密钥后用`python -B -m app.rag.check --live`完成一次显式合成场景验证。详见22/23文档。
+受控RAG已实现：密钥位于`backend/.env`；`generate_answer=true`或演示页勾选选项后启用。模型仅选择事实/引用ID，中文回答由程序受控渲染。离线自动化实验0次真实调用；用户随后提供了成功的真实DeepSeek演示页输出，本轮未额外发起付费调用。接入阶段已收尾，真实查询质量评测与统一证据展示为后续工作。详见22/23文档。
