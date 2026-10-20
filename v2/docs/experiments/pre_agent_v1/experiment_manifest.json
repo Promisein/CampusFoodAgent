@@ -1,0 +1,34 @@
+{
+  "experiment_id": "pre_agent_delivery_v1",
+  "outputs": {
+    "annotation_provenance.json": {
+      "bytes": 944,
+      "sha256": "cef04a42e95b682d40e2b9ba03bb2293f940f4372edb9e9906125f155120f9aa"
+    },
+    "final_query_manifest.json": {
+      "bytes": 5587,
+      "sha256": "3a48242a048364d68a0814c8792068cf2e583461d145ac7852dc8a554589510f"
+    },
+    "final_query_metrics.json": {
+      "bytes": 1160,
+      "sha256": "47666dd1b3d651c80fbbcef965c7ae94b8ec27982699d0548eb627657297f397"
+    },
+    "live_comparison_manifest.json": {
+      "bytes": 5366,
+      "sha256": "259402a20e6a927f2bb3359af0a669c3777d86967ae1c46554b6957c39e744a4"
+    },
+    "live_comparison_metrics.json": {
+      "bytes": 5518,
+      "sha256": "6731b95c7348b886a952fde7bc264ce0ddce3576a3300c12633d927d1f30dd55"
+    },
+    "silver_metrics.json": {
+      "bytes": 3236,
+      "sha256": "ebb115a8f07d31969a032e6a3cadc95e48389769f42c6f79314da304beea4779"
+    },
+    "verification.json": {
+      "bytes": 715,
+      "sha256": "d8f261cc1ecbae739bb8cea4746516e0e3a7011f51705cce4c8dfa599343d5d9"
+    }
+  },
+  "scope": "local development silver review and bounded live smoke test, not human gold or production acceptance"
+}

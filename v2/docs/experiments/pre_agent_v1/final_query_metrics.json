@@ -1,0 +1,30 @@
+{
+  "answer_citations": 188,
+  "card_answer_mismatches": 0,
+  "citation_violations": 0,
+  "contract_failures": {},
+  "contract_passed": 40,
+  "empty_or_clarification": 12,
+  "experiment_id": "query_quality_v1",
+  "label_source": "agent_curated_functional_not_human_gold",
+  "live_provider_calls": 0,
+  "recommendations": 140,
+  "recommendations_without_related_evidence": 22,
+  "requests": 40,
+  "review_status": {
+    "complete_relevance_queries": 0,
+    "evidence_coverage": 0.0,
+    "evidence_judged": 0,
+    "evidence_stance_counts": {},
+    "evidence_total": 188,
+    "label_source": "reviewer_supplied_labels_not_independently_verified",
+    "limitations": "complete returned pools only; no catalog-wide recall, blind test or inferred human labels",
+    "pooled_ndcg_at_5_complete_queries": null,
+    "precision_at_5_complete_queries": null,
+    "restaurant_coverage": 0.0,
+    "restaurant_judged": 0,
+    "restaurant_total": 140
+  },
+  "scope": "curated real-catalog functional audit; not human gold, model quality or blind evaluation",
+  "snapshot_id": "51f2f9c5b01aec5172f3d9c5b19290a1b63c0efd5de064cd4c41e8ddec867327"
+}

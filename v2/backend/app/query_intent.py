@@ -22,7 +22,7 @@ CATEGORIES = {
 SOFT_TOPICS = {
     'quiet': ('quiet', 'calm', 'peaceful', '安静'),
     'conversation': ('conversation', 'chat', '聊天'),
-    'date': ('romantic', 'date night', '约会', '浪漫'),
+    'date': ('romantic', 'date night', 'for a date', 'on a date', 'date spot', '约会', '浪漫'),
     'outdoor': ('outdoor', 'patio', '露天', '户外'),
 }
 STOPWORDS = set('a an the i want would like please find me restaurant restaurants food place nearby recommend within km price level no not without only and or for to with eat'.split())

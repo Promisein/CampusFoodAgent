@@ -1,0 +1,84 @@
+{
+  "baseline": {
+    "all": {
+      "complete_relevance_queries": 28,
+      "evidence_coverage": 1.0,
+      "evidence_judged": 196,
+      "evidence_stance_counts": {
+        "irrelevant": 6,
+        "mention_only": 23,
+        "support": 162,
+        "unclear": 5
+      },
+      "evidence_total": 196,
+      "label_source": "reviewer_supplied_labels_not_independently_verified",
+      "limitations": "complete returned pools only; no catalog-wide recall, blind test or inferred human labels",
+      "pooled_ndcg_at_5_complete_queries": 0.9519529640548583,
+      "precision_at_5_complete_queries": 0.8499999999999999,
+      "restaurant_coverage": 1.0,
+      "restaurant_judged": 140,
+      "restaurant_total": 140
+    },
+    "label_source": "agent_reviewed_silver_not_human_gold",
+    "soft_preference": {
+      "complete_relevance_queries": 10,
+      "evidence_coverage": 1.0,
+      "evidence_judged": 53,
+      "evidence_stance_counts": {
+        "irrelevant": 6,
+        "mention_only": 5,
+        "support": 37,
+        "unclear": 5
+      },
+      "evidence_total": 53,
+      "label_source": "reviewer_supplied_labels_not_independently_verified",
+      "limitations": "complete returned pools only; no catalog-wide recall, blind test or inferred human labels",
+      "pooled_ndcg_at_5_complete_queries": 0.8654682993536035,
+      "precision_at_5_complete_queries": 0.58,
+      "restaurant_coverage": 1.0,
+      "restaurant_judged": 50,
+      "restaurant_total": 50
+    }
+  },
+  "final": {
+    "all": {
+      "complete_relevance_queries": 28,
+      "evidence_coverage": 1.0,
+      "evidence_judged": 188,
+      "evidence_stance_counts": {
+        "mention_only": 23,
+        "support": 164,
+        "unclear": 1
+      },
+      "evidence_total": 188,
+      "label_source": "reviewer_supplied_labels_not_independently_verified",
+      "limitations": "complete returned pools only; no catalog-wide recall, blind test or inferred human labels",
+      "pooled_ndcg_at_5_complete_queries": 0.9707190448904797,
+      "precision_at_5_complete_queries": 0.8642857142857144,
+      "restaurant_coverage": 1.0,
+      "restaurant_judged": 140,
+      "restaurant_total": 140
+    },
+    "label_source": "agent_reviewed_silver_not_human_gold",
+    "soft_preference": {
+      "complete_relevance_queries": 10,
+      "evidence_coverage": 1.0,
+      "evidence_judged": 45,
+      "evidence_stance_counts": {
+        "mention_only": 5,
+        "support": 39,
+        "unclear": 1
+      },
+      "evidence_total": 45,
+      "label_source": "reviewer_supplied_labels_not_independently_verified",
+      "limitations": "complete returned pools only; no catalog-wide recall, blind test or inferred human labels",
+      "pooled_ndcg_at_5_complete_queries": 0.918013325693343,
+      "precision_at_5_complete_queries": 0.62,
+      "restaurant_coverage": 1.0,
+      "restaurant_judged": 50,
+      "restaurant_total": 50
+    }
+  },
+  "scope": "development corpus; two agent semantic reviewers; not independent human gold or blind test",
+  "transfer_policy": "readonly identity exact match excluding snapshot and record IDs; source annotations validated against their snapshots"
+}

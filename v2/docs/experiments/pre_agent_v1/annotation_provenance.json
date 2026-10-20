@@ -1,0 +1,14 @@
+{
+  "human_label_count": 0,
+  "label_source": "agent_reviewed_silver_not_human_gold",
+  "labels_sha256": {
+    "baseline_agent_silver.csv": "04b79e14378abe26dabd3e01e4410a8723ecc3f51198f2cc8f207256ca56f608",
+    "baseline_category_labels.csv": "bc0b7e330265577a85ce1a007347c8e3763def5ace8cee6a851cc4dc040074fd",
+    "baseline_soft_labels.csv": "d04364f4031202138499cd0f3204c10510695364a2934709447f9095345d2d39",
+    "final_agent_silver.csv": "ec4a7fedbc9c14f73bdaebc9aba68138c06751a66ea5eb01f36c77e9270330e4",
+    "final_soft_labels.csv": "a91d5174831306d8c0d090d16c54074fe10ca28052c3762fb98d456becec8c30"
+  },
+  "reproducibility": "two final offline audit runs byte-identical",
+  "snapshot_id": "51f2f9c5b01aec5172f3d9c5b19290a1b63c0efd5de064cd4c41e8ddec867327",
+  "transfer_policy": "semantic judgments transferred only on exact readonly identity except snapshot/record IDs; original labels validated against original sheets"
+}

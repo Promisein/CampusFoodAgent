@@ -29,6 +29,16 @@ def test_duplicate_review_id_keeps_quote_with_matching_source_text():
     assert result['source']=='first'
 
 
+def test_soft_topic_phrase_does_not_match_generic_night_or_split_across_sentence():
+    rows=[{'business_id':'b','review_id':'unrelated','text':'Friday night was busy. The short rib was good.'},
+          {'business_id':'b','review_id':'split','text':'What a date. Night was busy.'},
+          {'business_id':'b','review_id':'true','text':'A romantic atmosphere for a date night.'},
+          {'business_id':'b','review_id':'date','text':'A good spot for a date or casual dining.'}]
+    citations=retrieve_sentences('b',rows,parse_intent('romantic italian'),limit=10)
+    assert {c['review_id'] for c in citations}=={'true','date'}
+    assert all(c['matched_terms'] for c in citations)
+
+
 def test_selected_subset_links_same_card_quotes_and_uncovered_stays_unnumbered(tmp_path, monkeypatch):
     import app.main as main
     from app.models import EvidenceItem, RecommendationRequest

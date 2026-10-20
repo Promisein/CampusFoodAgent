@@ -1,0 +1,24 @@
+{
+  "independent_code_review": {
+    "fixed": "current code/config provenance and timeout failure reporting",
+    "remaining_important_findings": 0,
+    "scoped_tests_passed": 12
+  },
+  "live_calls": 5,
+  "live_generations_succeeded": 5,
+  "local_scope_only": true,
+  "offline_audit_reproducibility": "two final runs byte-identical",
+  "pip_check": "passed",
+  "secrets_in_artifacts": false,
+  "semantic_review": {
+    "baseline_evidence": 196,
+    "baseline_restaurants": 140,
+    "final_evidence": 188,
+    "final_restaurants": 140,
+    "human_gold_labels": 0,
+    "label_source": "agent_reviewed_silver_not_human_gold"
+  },
+  "test_warnings": 1,
+  "tests_passed": 232,
+  "tokens": 9276
+}

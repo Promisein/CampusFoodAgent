@@ -1,0 +1,186 @@
+{
+  "all_live_generations_succeeded": true,
+  "citation_violations": 0,
+  "completed_queries": 5,
+  "experiment_id": "pre_agent_comparison_v1",
+  "generated": 5,
+  "generation_wall_seconds_max": 1.8068815000005998,
+  "generation_wall_seconds_median": 1.6831318000040483,
+  "live_requested": true,
+  "model": "deepseek-flash",
+  "provider_attempts": 5,
+  "query_results": [
+    {
+      "candidate_generation_wall_seconds": 1.8068815000005998,
+      "candidate_selection": {
+        "judged": 3,
+        "label_source": "agent_reviewed_silver_not_human_gold",
+        "selected": 3,
+        "silver_support_fraction": 1.0,
+        "stance_counts": {
+          "support": 3
+        }
+      },
+      "citation_violations": 0,
+      "mode": "deepseek_plan",
+      "query_id": "q11",
+      "ranking_changed": false,
+      "reason": null,
+      "template_generation_wall_seconds": 0.00777580000431044,
+      "template_selection": {
+        "judged": 3,
+        "label_source": "agent_reviewed_silver_not_human_gold",
+        "selected": 3,
+        "silver_support_fraction": 1.0,
+        "stance_counts": {
+          "support": 3
+        }
+      },
+      "usage": {
+        "completion_tokens": 271,
+        "prompt_tokens": 1568,
+        "total_tokens": 1839
+      }
+    },
+    {
+      "candidate_generation_wall_seconds": 1.4786834999977145,
+      "candidate_selection": {
+        "judged": 4,
+        "label_source": "agent_reviewed_silver_not_human_gold",
+        "selected": 4,
+        "silver_support_fraction": 0.5,
+        "stance_counts": {
+          "mention_only": 2,
+          "support": 2
+        }
+      },
+      "citation_violations": 0,
+      "mode": "deepseek_plan",
+      "query_id": "q12",
+      "ranking_changed": false,
+      "reason": null,
+      "template_generation_wall_seconds": 0.0031136999969021417,
+      "template_selection": {
+        "judged": 4,
+        "label_source": "agent_reviewed_silver_not_human_gold",
+        "selected": 4,
+        "silver_support_fraction": 0.5,
+        "stance_counts": {
+          "mention_only": 2,
+          "support": 2
+        }
+      },
+      "usage": {
+        "completion_tokens": 253,
+        "prompt_tokens": 1686,
+        "total_tokens": 1939
+      }
+    },
+    {
+      "candidate_generation_wall_seconds": 1.6340019999988726,
+      "candidate_selection": {
+        "judged": 5,
+        "label_source": "agent_reviewed_silver_not_human_gold",
+        "selected": 5,
+        "silver_support_fraction": 0.6,
+        "stance_counts": {
+          "mention_only": 1,
+          "support": 3,
+          "unclear": 1
+        }
+      },
+      "citation_violations": 0,
+      "mode": "deepseek_plan",
+      "query_id": "q13",
+      "ranking_changed": false,
+      "reason": null,
+      "template_generation_wall_seconds": 0.00602229999640258,
+      "template_selection": {
+        "judged": 6,
+        "label_source": "agent_reviewed_silver_not_human_gold",
+        "selected": 6,
+        "silver_support_fraction": 0.6666666666666666,
+        "stance_counts": {
+          "mention_only": 1,
+          "support": 4,
+          "unclear": 1
+        }
+      },
+      "usage": {
+        "completion_tokens": 259,
+        "prompt_tokens": 1919,
+        "total_tokens": 2178
+      }
+    },
+    {
+      "candidate_generation_wall_seconds": 1.6831318000040483,
+      "candidate_selection": {
+        "judged": 5,
+        "label_source": "agent_reviewed_silver_not_human_gold",
+        "selected": 5,
+        "silver_support_fraction": 1.0,
+        "stance_counts": {
+          "support": 5
+        }
+      },
+      "citation_violations": 0,
+      "mode": "deepseek_plan",
+      "query_id": "q14",
+      "ranking_changed": false,
+      "reason": null,
+      "template_generation_wall_seconds": 0.005509199996595271,
+      "template_selection": {
+        "judged": 5,
+        "label_source": "agent_reviewed_silver_not_human_gold",
+        "selected": 5,
+        "silver_support_fraction": 1.0,
+        "stance_counts": {
+          "support": 5
+        }
+      },
+      "usage": {
+        "completion_tokens": 283,
+        "prompt_tokens": 1680,
+        "total_tokens": 1963
+      }
+    },
+    {
+      "candidate_generation_wall_seconds": 1.7889769000030356,
+      "candidate_selection": {
+        "judged": 0,
+        "label_source": "agent_reviewed_silver_not_human_gold",
+        "selected": 0,
+        "silver_support_fraction": null,
+        "stance_counts": {}
+      },
+      "citation_violations": 0,
+      "mode": "deepseek_plan",
+      "query_id": "q15",
+      "ranking_changed": false,
+      "reason": null,
+      "template_generation_wall_seconds": 0.003482200001599267,
+      "template_selection": {
+        "judged": 0,
+        "label_source": "agent_reviewed_silver_not_human_gold",
+        "selected": 0,
+        "silver_support_fraction": null,
+        "stance_counts": {}
+      },
+      "usage": {
+        "completion_tokens": 253,
+        "prompt_tokens": 1104,
+        "total_tokens": 1357
+      }
+    }
+  ],
+  "ranking_changes": 0,
+  "requested_queries": 5,
+  "scope": "bounded curated generation smoke test; not production latency or human quality",
+  "snapshot_id": "51f2f9c5b01aec5172f3d9c5b19290a1b63c0efd5de064cd4c41e8ddec867327",
+  "stop_reason": null,
+  "token_usage": {
+    "completion_tokens": 1319,
+    "prompt_tokens": 7957,
+    "total_tokens": 9276
+  }
+}

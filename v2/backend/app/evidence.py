@@ -31,6 +31,9 @@ def retrieve_sentences(business_id,reviews,intent,*,limit=2,include_text=False):
             score+=idf*tf*2.2/(tf+1.2*(.25+.75*sum(bag.values())/max(average,1)))
         if score<=0:continue
         matched=[term for term in terms if contains(sentence,term)]
+        # BM25 token overlap alone is insufficient for multi-word aspects:
+        # "night" is not evidence of "date night".
+        if intent.soft_topics and not matched:continue
         negative=bool(re.search(r'\b(?:not|never|no|loud|noisy|crowded)\b|不安静|吵|嘈杂|并不|不适合',sentence.lower()))
         ranked.append({'business_id':business_id,'review_id':row['review_id'],'source':str(row.get('source','yelp_review'))[:80],
                        'excerpt':sentence,'score':score,'matched_terms':matched,
