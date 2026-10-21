@@ -128,7 +128,17 @@ def register_product_routes(app,accounts,agents,service,events,*,secure_cookie):
     @app.get('/api/v2/product/conversations')
     def conversations(request:Request):
         account,_=identity(request)
-        return {'conversations':safe(lambda:accounts().list_conversations(account['id']))}
+        def operation():
+            active=[]
+            for item in accounts().list_conversations(account['id'],limit=1000):
+                try:agents().get(item['session_id'])
+                except SessionError as error:
+                    if error.status in (404,410):continue
+                    raise
+                active.append(item)
+                if len(active)==30:break
+            return active
+        return {'conversations':safe(operation)}
 
     @app.get('/api/v2/product/sessions/{session_id}')
     def get_session(session_id:str,request:Request):
@@ -157,6 +167,12 @@ def register_product_routes(app,accounts,agents,service,events,*,secure_cookie):
         return {'favorites':[{'business_id':row['business_id'],'name':row['name'],
             'city':row.get('city'),'rating':row.get('rating'),'price_level':row.get('price_level'),
             'favorited_at':row['favorited_at']} for row in rows]}
+
+    @app.delete('/api/v2/product/favorites/{business_id}')
+    def remove_favorite(business_id:str,request:Request):
+        account,_=mutation(request)
+        if not 1<=len(business_id)<=128:raise HTTPException(422,'invalid_business_id')
+        return {'removed':safe(lambda:events().remove_favorite(account['id'],business_id))}
 
     @app.get('/api/v2/product/history')
     def history(request:Request):

@@ -14,7 +14,7 @@ from fastapi import HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
 
 
-EVENT_TYPES = ('impression', 'click', 'favorite', 'dislike', 'rating')
+EVENT_TYPES = ('impression', 'click', 'favorite', 'unfavorite', 'dislike', 'rating')
 
 
 class EventPayload(BaseModel):
@@ -24,7 +24,7 @@ class EventPayload(BaseModel):
     request_id: str = Field(min_length=1, max_length=128, pattern=r'\S')
     user_id: str | None = Field(default=None, min_length=1, max_length=128, pattern=r'\S')
     business_id: str = Field(min_length=1, max_length=128, pattern=r'\S')
-    event_type: Literal['impression', 'click', 'favorite', 'dislike', 'rating']
+    event_type: Literal['impression', 'click', 'favorite', 'unfavorite', 'dislike', 'rating']
     rating: StrictInt | None = Field(default=None, ge=1, le=5)
 
     @model_validator(mode='after')
@@ -120,6 +120,24 @@ class EventRepository:
             return [self._event(row) for row in db.execute(
                 'SELECT * FROM events WHERE user_id IS ? ORDER BY rowid DESC LIMIT ?', (user_id, limit))]
 
+    def remove_favorite(self, user_id, business_id):
+        """Atomically revoke an owned favorite without recording negative feedback."""
+        with self._connection() as db:
+            db.execute('BEGIN IMMEDIATE')
+            latest = db.execute('''SELECT * FROM events WHERE user_id IS ? AND business_id=?
+                AND event_type IN ('favorite','unfavorite','dislike')
+                ORDER BY rowid DESC LIMIT 1''', (user_id, business_id)).fetchone()
+            if latest is None or latest['event_type'] != 'favorite':
+                return False
+            payload = {'event_id': str(uuid4()), 'request_id': latest['request_id'],
+                       'user_id': user_id, 'business_id': business_id,
+                       'event_type': 'unfavorite', 'rating': None}
+            db.execute('INSERT INTO events VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (
+                payload['event_id'], payload['request_id'], user_id, business_id,
+                'unfavorite', None, _now(),
+                json.dumps(payload, sort_keys=True, ensure_ascii=False)))
+            return True
+
     def favorites(self, user_id):
         with self._connection() as db:
             rows = db.execute('''SELECT e.*, x.results_json FROM events e
@@ -127,7 +145,7 @@ class EventRepository:
                 WHERE e.user_id IS ? AND e.event_type='favorite'
                 AND NOT EXISTS (SELECT 1 FROM events newer
                     WHERE newer.user_id IS e.user_id AND newer.business_id=e.business_id
-                    AND newer.event_type IN ('favorite','dislike') AND newer.rowid>e.rowid)
+                    AND newer.event_type IN ('favorite','unfavorite','dislike') AND newer.rowid>e.rowid)
                 ORDER BY e.rowid DESC''', (user_id,)).fetchall()
             return [{**next(item for item in json.loads(row['results_json'])
                              if item['business_id'] == row['business_id']),

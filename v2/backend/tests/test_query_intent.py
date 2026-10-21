@@ -54,10 +54,22 @@ def test_unsupported_clause_is_not_silently_discarded(query):
 
 @pytest.mark.parametrize('query', ['pizza price level < 2', 'pizza price level > 2', '披萨 价格等级低于2',
                                    'pizza within 500 m', 'pizza between 2 and 5 km', '披萨2到5公里',
-                                   'pizza price level 2.5', 'pizza -3 km', '披萨500米内', '披萨三公里内'])
+                                   'pizza price level 2.5', 'pizza -3 km', '披萨500米内'])
 def test_unsupported_numeric_grammar_requests_clarification(query):
     from app.query_intent import parse_intent
     assert parse_intent(query).needs_clarification
+
+
+def test_common_chinese_family_and_kilometer_phrases():
+    from app.query_intent import parse_intent
+
+    family=parse_intent('带孩子吃饭')
+    assert family.soft_topics==['family'] and not family.needs_clarification
+    nearby=parse_intent('三公里内的披萨店')
+    assert nearby.include_categories==['pizza']
+    assert nearby.radius_km==3 and not nearby.needs_clarification
+    assert parse_intent('六十公里内的披萨店').needs_clarification
+    assert parse_intent('至少五公里外的披萨店').needs_clarification
 
 
 def test_supported_upper_bound_and_pure_exclusion_do_not_create_false_signal():

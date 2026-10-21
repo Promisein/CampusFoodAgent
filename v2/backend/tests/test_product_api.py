@@ -48,9 +48,21 @@ def test_account_cookie_csrf_and_owned_agent_flow(tmp_path,monkeypatch):
     saved=client.post(f"/api/v2/product/sessions/{session['session_id']}/turns",json=favorite_payload,headers={'X-CSRF-Token':csrf})
     assert saved.status_code==200 and saved.json()['status']=='completed'
     assert len(client.get('/api/v2/product/favorites').json()['favorites'])==1
+    business_id=client.get('/api/v2/product/favorites').json()['favorites'][0]['business_id']
+    assert client.delete('/api/v2/product/favorites/'+business_id).status_code==403
+    removed=client.delete('/api/v2/product/favorites/'+business_id,headers={'X-CSRF-Token':csrf})
+    assert removed.status_code==200 and removed.json()=={'removed':True}
+    again=client.delete('/api/v2/product/favorites/'+business_id,headers={'X-CSRF-Token':csrf})
+    assert again.status_code==200 and again.json()=={'removed':False}
+    assert client.get('/api/v2/product/favorites').json()['favorites']==[]
+    assert client.get('/api/v2/product/history').json()['events'][0]['event_type']=='unfavorite'
     assert client.get('/api/v2/product/conversations').json()['conversations'][0]['session_id']==session['session_id']
     retry=client.post(f"/api/v2/product/sessions/{session['session_id']}/turns",json=favorite_payload,headers={'X-CSRF-Token':csrf})
     assert retry.status_code==200 and retry.json()==saved.json()
+    assert client.get('/api/v2/product/favorites').json()['favorites']==[]
+    resave={**favorite_payload,'turn_id':str(uuid4()),'expected_version':2}
+    assert client.post(f"/api/v2/product/sessions/{session['session_id']}/turns",
+        json=resave,headers={'X-CSRF-Token':csrf}).status_code==200
     assert len(client.get('/api/v2/product/favorites').json()['favorites'])==1
 
 
@@ -61,12 +73,21 @@ def test_other_account_cannot_read_or_write_agent_session(tmp_path,monkeypatch):
     made=alice.post('/api/v2/product/sessions',json=context,headers={'X-CSRF-Token':alice_auth['csrf_token']}).json()
     bob=TestClient(main.app)
     bob_auth=register(bob,'bob_001')
+    owner=alice_auth['account']['id']
+    exposure=main.get_event_repository().record_exposure({'user_id':owner,'query':'coffee'},
+        {'recommendations':[{'business_id':'private-cafe','name':'Private Cafe','city':'Tampa',
+                             'rating':4,'price_level':2}]})
+    main.get_event_repository().record_event({'event_id':str(uuid4()),'request_id':exposure,
+        'user_id':owner,'business_id':'private-cafe','event_type':'favorite'})
     sid=made['session_id']
     assert bob.get('/api/v2/product/sessions/'+sid).status_code==404
     denied=bob.post('/api/v2/product/sessions/'+sid+'/turns',json={'turn_id':'x','expected_version':0,'message':'收藏第一家'},headers={'X-CSRF-Token':bob_auth['csrf_token']})
     assert denied.status_code==404
     assert bob.get('/api/v2/product/conversations').json()['conversations']==[]
     assert bob.get('/api/v2/product/favorites').json()['favorites']==[]
+    assert bob.delete('/api/v2/product/favorites/private-cafe',
+        headers={'X-CSRF-Token':bob_auth['csrf_token']}).json()=={'removed':False}
+    assert len(alice.get('/api/v2/product/favorites').json()['favorites'])==1
     assert alice.get('/api/v2/product/sessions/'+sid).status_code==200
     out=alice.post('/api/v2/product/logout',headers={'X-CSRF-Token':alice_auth['csrf_token']})
     assert out.status_code==200 and alice.get('/api/v2/product/me').status_code==401
@@ -82,3 +103,17 @@ def test_product_mode_closes_unprotected_legacy_routes(tmp_path,monkeypatch):
     assert client.post('/api/v2/agent/sessions',json={'latitude':0,'longitude':0}).status_code==404
     assert client.get('/app').status_code==200
     assert client.get('/api/v2/system/status').json()['agent']['production_auth'] is True
+
+
+def test_expired_conversations_are_not_offered_as_recoverable(tmp_path,monkeypatch):
+    client,_,main=setup_product(tmp_path,monkeypatch)
+    auth=register(client,'alice_1')
+    repository=main.get_agent_repository()
+    now=[repository.clock()]
+    repository.clock=lambda:now[0]
+    made=client.post('/api/v2/product/sessions',json={'latitude':0,'longitude':0},
+        headers={'X-CSRF-Token':auth['csrf_token']}).json()
+    assert len(client.get('/api/v2/product/conversations').json()['conversations'])==1
+    now[0]+=repository.ttl+1
+    assert client.get('/api/v2/product/conversations').json()['conversations']==[]
+    assert client.get('/api/v2/product/sessions/'+made['session_id']).status_code==410

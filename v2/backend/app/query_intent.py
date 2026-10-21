@@ -26,7 +26,7 @@ SOFT_TOPICS = {
     'outdoor': ('outdoor', 'patio', '露天', '户外'),
     'formal': ('upscale', 'elegant', 'formal', 'fine dining', '体面', '正式', '有档次'),
     'hosting': ('special occasion', 'celebration', 'dinner party', '请客', '宴请', '聚餐'),
-    'family': ('family friendly', 'kid friendly', '亲子', '带娃'),
+    'family': ('family friendly', 'kid friendly', '亲子', '带娃', '带孩子', '带小孩'),
     'work': ('wifi', 'laptop', 'study', '办公', '学习'),
     'parking': ('parking', '停车'),
     'value': ('value for money', 'affordable', '性价比', '实惠'),
@@ -41,6 +41,17 @@ def alias_pattern(alias):
 
 def contains(text, term):
     return re.search(alias_pattern(term), text.lower()) is not None
+
+
+def chinese_kilometers(token):
+    digits={'一':1,'二':2,'两':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9}
+    if token in digits:return digits[token]
+    if token=='十':return 10
+    if token.count('十')==1:
+        tens,ones=token.split('十')
+        if (not tens or tens in digits) and (not ones or ones in digits):
+            return (digits[tens] if tens else 1)*10+(digits[ones] if ones else 0)
+    return None
 
 
 @dataclass
@@ -91,9 +102,13 @@ def parse_intent(query):
             else:
                 intent.soft_topics.append(key)
     radii = [float(m) for m in re.findall(r'(\d+(?:\.\d+)?)\s*(?:公里|千米|\bkm\b)', text)]
+    for token in re.findall(r'([零一二两三四五六七八九十百千]+)\s*(?:公里|千米)',text):
+        converted=chinese_kilometers(token)
+        if converted is None:intent.unresolved_constraints.append('unsupported_distance_expression')
+        else:radii.append(float(converted))
     if radii:
         intent.radius_km = min(radii)
-        if intent.radius_km <= 0:
+        if any(radius<=0 or radius>50 for radius in radii):
             intent.unresolved_constraints.append('invalid_radius')
     prices = [int(m) for m in re.findall(r'(?:价格等级(?:不超过|上限|为)?|price\s+level\s*(?:<=|at most)?\s*)(\d+)', text)]
     if prices:
@@ -111,8 +126,8 @@ def parse_intent(query):
         'allergy_not_verifiable': r'过敏|\ballerg\w*\b',
         'current_hours_unavailable': r'现在营业|此刻营业|\bopen now\b',
         'dietary_guarantee_unavailable': r'无麸质|不含麸质|不含花生|\bgluten.free\b|\bhalal\b|清真',
-        'unsupported_limit_operator': r'(?:至少|大于|(?<!不)超过|不低于|\bat least\b|\bmore than\b|\bbeyond\b|\boutside\b|[><=])\s*\d+\s*(?:公里|千米|km)|\d+\s*(?:公里|千米)外|价格等级不低于|price\s+level\s*(?:>=|at least)',
-        'unsupported_distance_expression': r'\d+\s*(?:米|\bm\b|\bmeters?\b|\bmiles?\b|\bmi\b)|\bbetween\b.*\bkm\b|\d+\s*(?:到|至|-|and)\s*\d+\s*(?:公里|千米|km)|-\s*\d+\s*(?:公里|千米|km)|[一二三四五六七八九十两]+\s*(?:公里|千米)',
+        'unsupported_limit_operator': r'(?:至少|大于|(?<!不)超过|不低于|\bat least\b|\bmore than\b|\bbeyond\b|\boutside\b|[><=])\s*(?:\d+|[零一二两三四五六七八九十百千]+)\s*(?:公里|千米|km)|(?:\d+|[零一二两三四五六七八九十百千]+)\s*(?:公里|千米)外|价格等级不低于|price\s+level\s*(?:>=|at least)',
+        'unsupported_distance_expression': r'\d+\s*(?:米|\bm\b|\bmeters?\b|\bmiles?\b|\bmi\b)|\bbetween\b.*\bkm\b|\d+\s*(?:到|至|-|and)\s*\d+\s*(?:公里|千米|km)|-\s*\d+\s*(?:公里|千米|km)',
     }
     for reason, pattern in unsupported.items():
         if re.search(pattern, text):

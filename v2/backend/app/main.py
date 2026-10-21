@@ -17,7 +17,7 @@ from app.rag.settings import load_settings,RagSettings
 from app.rag.generation import AnswerService
 from app.evidence import link_answer_evidence
 
-app = FastAPI(title="CampusFoodAgent Yelp v2 API", version="0.8.0")
+app = FastAPI(title="CampusFoodAgent Yelp v2 API", version="0.8.1")
 dataset_repository = ProcessedDatasetRepository(
     Path(__file__).resolve().parents[1] / "data" / "processed"
 )
@@ -78,7 +78,7 @@ def attach_answer(request,response):
 @app.get('/api/v2/system/status')
 def system_status():
     product_mode=os.environ.get('CAMPUSFOOD_MODE','local')=='product'
-    result={'version':'0.8.0','scope':'single_host_product_preview' if product_mode else 'local_offline_demo','rag':rag_status(),
+    result={'version':'0.8.1','scope':'single_host_product_preview' if product_mode else 'local_offline_demo','rag':rag_status(),
             'agent':{'version':'agent_semantic_v2','max_turns':30,'ttl_seconds':86400,'max_steps':4,
                      'max_provider_calls_per_turn':1,'planning_default':'rules','production_auth':product_mode}}
     for key,repository in [('history',serving_repository),('search',search_repository),('ranker',ranking_repository)]:

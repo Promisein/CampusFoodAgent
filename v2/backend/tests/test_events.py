@@ -54,7 +54,7 @@ def test_parallel_retries_favorites_history_and_explicit_metric_denominators(tmp
     assert repo.favorites('alice')[0]['business_id'] == 'cafe'
     assert repo.favorites('bob') == []
     assert len(repo.history('alice', limit=2)) == 2
-    assert repo.metrics()['event_counts'] == {'impression': 1, 'click': 1, 'favorite': 1, 'dislike': 0, 'rating': 1}
+    assert repo.metrics()['event_counts'] == {'impression': 1, 'click': 1, 'favorite': 1, 'unfavorite': 0, 'dislike': 0, 'rating': 1}
     assert repo.metrics()['exposure_requests'] == 1
     assert repo.metrics()['exposed_items'] == 1
     assert repo.metrics()['ctr'] == 1
@@ -66,6 +66,22 @@ def test_anonymous_exposure_cannot_be_used_by_named_user(tmp_path):
     repo.record_event(event(request_id, user_id=None))
     with pytest.raises(ValueError):
         repo.record_event(event(request_id, event_id='bad'))
+
+
+def test_unfavorite_is_not_dislike_and_can_be_saved_again(tmp_path):
+    repo, request_id = exposed(tmp_path)
+    repo.record_event(event(request_id, event_id='saved', event_type='favorite'))
+    assert len(repo.favorites('alice')) == 1
+    assert repo.remove_favorite('bob', 'cafe') is False
+    assert repo.remove_favorite('alice', 'cafe') is True
+    assert repo.remove_favorite('alice', 'cafe') is False
+    assert repo.favorites('alice') == []
+    history = repo.history('alice')
+    assert history[0]['event_type'] == 'unfavorite'
+    assert repo.metrics()['event_counts']['dislike'] == 0
+    assert repo.metrics()['event_counts']['unfavorite'] == 1
+    repo.record_event(event(request_id, event_id='saved-again', event_type='favorite'))
+    assert len(repo.favorites('alice')) == 1
 
 
 def test_unique_ctr_counts_only_clicked_impressed_exposure_items(tmp_path):
