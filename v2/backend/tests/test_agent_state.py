@@ -45,7 +45,7 @@ def test_cancel_english_topic_removes_it_from_canonical_query():
     from app.agent.state import initial_state,merge_slots,query_for_slots
     from app.query_intent import parse_intent
     state=initial_state({'latitude':0,'longitude':0})
-    state['slots']=merge_slots(state,'quiet laptop')
-    assert 'laptop' in state['slots']['terms']
+    state['slots']=merge_slots(state,'quiet espresso')
+    assert 'espresso' in state['slots']['terms']
     state['slots']=merge_slots(state,'取消安静要求')
     assert not parse_intent(query_for_slots(state['slots'])).soft_topics

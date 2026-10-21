@@ -3,6 +3,7 @@ from copy import deepcopy
 import re
 
 from app.query_intent import CATEGORIES, SOFT_TOPICS, contains, parse_intent
+from app.agent.messages import issue_message
 
 
 class Clarification(ValueError):
@@ -56,7 +57,7 @@ def merge_slots(state,message):
         raise Clarification('一次请只取消一个明确条件，例如取消户外要求或取消排除披萨。')
     intent=parse_intent(message)
     if intent.needs_clarification:
-        raise Clarification('这些条件暂时无法可靠确认：'+', '.join(intent.unresolved_constraints)+'。请改用价格等级、公里半径或明确类别。')
+        raise Clarification(issue_message(intent.unresolved_constraints))
     cheaper=bool(re.search(r'便宜(?:一?点|一些)|\bcheaper\b',message,re.I))
     nearer=bool(re.search(r'近(?:一?点|一些)|\bcloser\b',message,re.I))
     if not (intent.has_query_signal or intent.exclude_categories or intent.radius_km is not None or

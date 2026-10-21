@@ -48,7 +48,7 @@
     {"id":"recover","turns":[
       {"message":"咖啡","status":"completed"},
       {"message":"现在营业","status":"needs_clarification","empty":true},
-      {"message":"价格等级2","status":"completed","price":2,"include":["coffee"]},
+      {"message":"改为历史数据，价格等级2","status":"completed","price":2,"include":["coffee"]},
       {"message":"解释第一家","status":"completed"},
       {"message":"收藏它","status":"completed","favorite_count":1}]}
   ]

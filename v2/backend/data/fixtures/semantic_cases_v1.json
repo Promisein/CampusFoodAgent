@@ -1,0 +1,30 @@
+{
+  "version":"semantic_v2",
+  "scope":"agent-curated natural restaurant expressions with scripted semantic plans; not blind or human dialogue gold",
+  "cases":[
+    {"id":"screenshot","message":"我想吃一个体面点的饭店，然后适合请客和约会","changes":[{"field":"topics","op":"add","value":["formal","hosting","date"],"quote":"体面点的饭店，然后适合请客和约会"}],"expect_topics":["date","formal","hosting"],"expect_issue":false},
+    {"id":"no_cuisine","message":"菜系随便，环境雅致点，适合招待朋友","changes":[{"field":"topics","op":"add","value":["formal","hosting"],"quote":"环境雅致点，适合招待朋友"}],"expect_topics":["formal","hosting"],"expect_issue":false},
+    {"id":"english_polite","message":"Could you find somewhere elegant for a special dinner with friends?","changes":[{"field":"topics","op":"add","value":["formal","hosting"],"quote":"elegant for a special dinner with friends"}],"expect_topics":["formal","hosting"],"expect_issue":false},
+    {"id":"quiet_paraphrase","message":"别太吵，能好好说话就行","changes":[{"field":"topics","op":"add","value":["quiet","conversation"],"quote":"别太吵，能好好说话"}],"expect_topics":["conversation","quiet"],"expect_issue":false},
+    {"id":"negated_noise","message":"不要太吵的咖啡馆","changes":[{"field":"include","op":"set","value":["coffee"],"quote":"咖啡馆"},{"field":"topics","op":"add","value":["quiet"],"quote":"不要太吵"}],"expect_include":["coffee"],"expect_issue":false},
+    {"id":"family","message":"周末带娃吃饭，别太正式","changes":[{"field":"topics","op":"add","value":["family"],"quote":"带娃吃饭"}],"expect_topics":["family"],"expect_issue":false},
+    {"id":"work","message":"想找个能带电脑坐坐的咖啡馆","changes":[{"field":"include","op":"set","value":["coffee"],"quote":"咖啡馆"},{"field":"topics","op":"add","value":["work"],"quote":"带电脑坐坐"}],"expect_include":["coffee"],"expect_issue":false},
+    {"id":"parking","message":"开车过去，停车方便一点","changes":[{"field":"topics","op":"add","value":["parking"],"quote":"停车方便"}],"expect_topics":["parking"],"expect_issue":false},
+    {"id":"money","message":"想约会，人均两百元以内","changes":[{"field":"topics","op":"add","value":["date"],"quote":"约会"}],"issues":[{"code":"currency_budget","quote":"人均两百元以内"}],"expect_issue":true},
+    {"id":"money_numeric","message":"人均100元内，还要体面","changes":[{"field":"topics","op":"add","value":["formal"],"quote":"体面"}],"expect_issue":true},
+    {"id":"live","message":"今晚八点一定要有座位","changes":[],"expect_issue":true},
+    {"id":"allergy","message":"孩子花生过敏，必须保证没问题","changes":[],"expect_issue":true},
+    {"id":"allergy_not_cancelled","message":"花生过敏，但安静可以作为软偏好，我接受软偏好","changes":[],"expect_issue":true},
+    {"id":"impossible_radius","message":"方圆一百公里都可以","changes":[],"expect_issue":true},
+    {"id":"meters","message":"五百米以内的咖啡店","changes":[{"field":"include","op":"set","value":["coffee"],"quote":"咖啡店"},{"field":"radius_km","op":"set","value":0.5,"quote":"五百米"}],"expect_radius":0.5,"expect_issue":false},
+    {"id":"price_chinese","message":"那就价格等级二，不要披萨","changes":[{"field":"max_price_level","op":"set","value":2,"quote":"价格等级二"},{"field":"exclude","op":"add","value":["pizza"],"quote":"不要披萨"}],"expect_price":2,"expect_exclude":["pizza"],"expect_issue":false},
+    {"id":"contradiction","message":"只要披萨，但不要披萨","changes":[],"expect_issue":true},
+    {"id":"out_of_scope","message":"帮我写代码","changes":[],"expect_issue":true},
+    {"id":"unknown_food","message":"想吃火星料理","changes":[],"issues":[{"code":"unknown_cuisine","quote":"火星料理"}],"expect_issue":true},
+    {"id":"location","message":"换到纽约帮我找","changes":[],"expect_issue":true},
+    {"id":"guaranteed_atmosphere","message":"必须绝对安静","changes":[{"field":"topics","op":"add","value":["quiet"],"quote":"安静"}],"expect_issue":true},
+    {"id":"strict_bound","message":"coffee within 1 km, within 5 km","changes":[{"field":"radius_km","op":"set","value":5,"quote":"5 km"}],"expect_radius":1,"expect_issue":false},
+    {"id":"restaurant_name","message":"想去星巴克喝点东西","changes":[{"field":"include","op":"set","value":["coffee"],"quote":"喝点东西"},{"field":"terms","op":"add","value":["Starbucks"],"quote":"星巴克"}],"expect_include":["coffee"],"expect_issue":false},
+    {"id":"novel_cuisine","message":"我想试试泰国口味","changes":[{"field":"include","op":"set","value":["thai"],"quote":"泰国口味"}],"expect_include":["thai"],"expect_issue":false}
+  ]
+}

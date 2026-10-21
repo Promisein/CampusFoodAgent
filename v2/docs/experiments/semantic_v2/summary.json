@@ -1,0 +1,80 @@
+{
+  "agent_regression": {
+    "claims": "functional state/tool/write/grounding contracts only; not open-ended dialogue quality",
+    "experiment_id": "agent_v1",
+    "provider_calls": 0,
+    "scenario_passed": 12,
+    "scenarios": 12,
+    "scope": "curated synthetic multi-turn functional contracts, not human dialogue quality",
+    "steps": 37,
+    "steps_passed": 37
+  },
+  "claims": "scripted contracts and five selected live smoke requests; no human natural-language gold or general accuracy estimate",
+  "experiment_id": "semantic_v2_release",
+  "full_test_suite": {
+    "existing_deprecation_warnings": 1,
+    "failed": 0,
+    "passed": 297
+  },
+  "live_smoke": {
+    "cases": [
+      {
+        "case": "scene",
+        "expected_status": "completed",
+        "planner_mode": "deepseek_semantic",
+        "provider_calls": 1,
+        "recommendation_count": 5,
+        "status": "completed",
+        "total_tokens": 845
+      },
+      {
+        "case": "money",
+        "expected_status": "needs_clarification",
+        "planner_mode": "deepseek_semantic",
+        "provider_calls": 1,
+        "recommendation_count": 0,
+        "status": "needs_clarification",
+        "total_tokens": 994
+      },
+      {
+        "case": "price_resolution",
+        "expected_status": "completed",
+        "planner_mode": "deepseek_semantic",
+        "provider_calls": 1,
+        "recommendation_count": 5,
+        "status": "completed",
+        "total_tokens": 1147
+      },
+      {
+        "case": "allergy",
+        "expected_status": "needs_clarification",
+        "planner_mode": "deepseek_semantic",
+        "provider_calls": 1,
+        "recommendation_count": 0,
+        "status": "needs_clarification",
+        "total_tokens": 850
+      },
+      {
+        "case": "outside",
+        "expected_status": "needs_clarification",
+        "planner_mode": "deepseek_semantic",
+        "provider_calls": 1,
+        "recommendation_count": 0,
+        "status": "needs_clarification",
+        "total_tokens": 803
+      }
+    ],
+    "cases_passed": 5,
+    "provider_calls": 5,
+    "scope": "five selected live DeepSeek smoke cases; not a representative accuracy sample",
+    "total_tokens": 4639
+  },
+  "scripted_semantics": {
+    "cases": 24,
+    "claims": "schema/slot/issue contracts with scripted model outputs; not measured open-ended language accuracy",
+    "experiment_id": "semantic_v2_scripted",
+    "passed": 24,
+    "provider_calls": 0,
+    "scope": "agent-curated natural restaurant expressions with scripted semantic plans; not blind or human dialogue gold"
+  }
+}

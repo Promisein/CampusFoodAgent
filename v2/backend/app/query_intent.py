@@ -24,6 +24,12 @@ SOFT_TOPICS = {
     'conversation': ('conversation', 'chat', '聊天'),
     'date': ('romantic', 'date night', 'for a date', 'on a date', 'date spot', '约会', '浪漫'),
     'outdoor': ('outdoor', 'patio', '露天', '户外'),
+    'formal': ('upscale', 'elegant', 'formal', 'fine dining', '体面', '正式', '有档次'),
+    'hosting': ('special occasion', 'celebration', 'dinner party', '请客', '宴请', '聚餐'),
+    'family': ('family friendly', 'kid friendly', '亲子', '带娃'),
+    'work': ('wifi', 'laptop', 'study', '办公', '学习'),
+    'parking': ('parking', '停车'),
+    'value': ('value for money', 'affordable', '性价比', '实惠'),
 }
 STOPWORDS = set('a an the i want would like please find me restaurant restaurants food place nearby recommend within km price level no not without only and or for to with eat'.split())
 NEGATION = r'(?:不要|不吃|排除|除了|不想吃|不喝|不含|\bno\b|\bnot\b|\bwithout\b|\bexclude\b)'
