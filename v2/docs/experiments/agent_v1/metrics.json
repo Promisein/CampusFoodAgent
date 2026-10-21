@@ -1,0 +1,10 @@
+{
+  "claims": "functional state/tool/write/grounding contracts only; not open-ended dialogue quality",
+  "experiment_id": "agent_v1",
+  "provider_calls": 0,
+  "scenario_passed": 12,
+  "scenarios": 12,
+  "scope": "curated synthetic multi-turn functional contracts, not human dialogue quality",
+  "steps": 37,
+  "steps_passed": 37
+}

@@ -1,0 +1,1137 @@
+[
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "flow",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "flow",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 3,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 2
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "flow",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 3,
+      "radius_km": 50,
+      "terms": [],
+      "topics": [
+        "outdoor"
+      ]
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 3
+  },
+  {
+    "action": "explain",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": "seed",
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "flow",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 3,
+      "radius_km": 50,
+      "terms": [],
+      "topics": [
+        "outdoor"
+      ]
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "retrieve_evidence",
+        "write": false
+      },
+      {
+        "status": "completed",
+        "tool": "explain_restaurant",
+        "write": false
+      }
+    ],
+    "turn": 4
+  },
+  {
+    "action": "favorite",
+    "errors": [],
+    "favorite_events": 1,
+    "focused_business_id": "seed",
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "flow",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 3,
+      "radius_km": 50,
+      "terms": [],
+      "topics": [
+        "outdoor"
+      ]
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "save_favorite",
+        "write": true
+      }
+    ],
+    "turn": 5
+  },
+  {
+    "action": "history",
+    "errors": [],
+    "favorite_events": 1,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "flow",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 3,
+      "radius_km": 50,
+      "terms": [],
+      "topics": [
+        "outdoor"
+      ]
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "get_history",
+        "write": false
+      }
+    ],
+    "turn": 6
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "exclude",
+    "slots": {
+      "exclude": [
+        "pizza"
+      ],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "exclude",
+    "slots": {
+      "exclude": [
+        "pizza"
+      ],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 25.0,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 2
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "switch",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "p1",
+      "p2"
+    ],
+    "scenario": "switch",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "pizza"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 2
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "unsupported_write",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [],
+    "scenario": "unsupported_write",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "needs_clarification",
+    "tools": [],
+    "turn": 2
+  },
+  {
+    "action": "favorite",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [],
+    "scenario": "unsupported_write",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "needs_clarification",
+    "tools": [],
+    "turn": 3
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "stale_focus",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "explain",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": "seed",
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "stale_focus",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "retrieve_evidence",
+        "write": false
+      },
+      {
+        "status": "completed",
+        "tool": "explain_restaurant",
+        "write": false
+      }
+    ],
+    "turn": 2
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "p1",
+      "p2"
+    ],
+    "scenario": "stale_focus",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "pizza"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 3
+  },
+  {
+    "action": "favorite",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "p1",
+      "p2"
+    ],
+    "scenario": "stale_focus",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "pizza"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "needs_clarification",
+    "tools": [],
+    "turn": 4
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [],
+    "scenario": "no_results",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "sushi"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "explain",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [],
+    "scenario": "no_results",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "sushi"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "needs_clarification",
+    "tools": [],
+    "turn": 2
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "remove_topic",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": [
+        "quiet"
+      ]
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "remove_topic",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 2
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "no_write_consent",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "clarify",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "no_write_consent",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "needs_clarification",
+    "tools": [],
+    "turn": 2
+  },
+  {
+    "action": "clarify",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "no_write_consent",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "needs_clarification",
+    "tools": [],
+    "turn": 3
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "p1",
+      "p2"
+    ],
+    "scenario": "explicit_limits",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "pizza"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [],
+    "scenario": "explicit_limits",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "pizza"
+      ],
+      "max_price_level": 1,
+      "radius_km": 2.0,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 2
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "p2"
+    ],
+    "scenario": "explicit_limits",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "pizza"
+      ],
+      "max_price_level": 1,
+      "radius_km": 5.0,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 3
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "cancel_suffix",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": [
+        "outdoor"
+      ]
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [],
+    "scenario": "cancel_suffix",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": [
+        "outdoor"
+      ]
+    },
+    "status": "needs_clarification",
+    "tools": [],
+    "turn": 2
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "idempotent_write",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "favorite",
+    "errors": [],
+    "favorite_events": 1,
+    "focused_business_id": "c1",
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "idempotent_write",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "save_favorite",
+        "write": true
+      }
+    ],
+    "turn": 2
+  },
+  {
+    "action": "favorites",
+    "errors": [],
+    "favorite_events": 1,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "idempotent_write",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "get_favorites",
+        "write": false
+      }
+    ],
+    "turn": 3
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "recover",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 1
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [],
+    "scenario": "recover",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 4,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "needs_clarification",
+    "tools": [],
+    "turn": 2
+  },
+  {
+    "action": "search",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": null,
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "recover",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 2,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "search_restaurants",
+        "write": false
+      }
+    ],
+    "turn": 3
+  },
+  {
+    "action": "explain",
+    "errors": [],
+    "favorite_events": 0,
+    "focused_business_id": "c1",
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "recover",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 2,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "retrieve_evidence",
+        "write": false
+      },
+      {
+        "status": "completed",
+        "tool": "explain_restaurant",
+        "write": false
+      }
+    ],
+    "turn": 4
+  },
+  {
+    "action": "favorite",
+    "errors": [],
+    "favorite_events": 1,
+    "focused_business_id": "c1",
+    "provider_calls": 0,
+    "returned_ids": [
+      "c1",
+      "seed",
+      "c2"
+    ],
+    "scenario": "recover",
+    "slots": {
+      "exclude": [],
+      "include": [
+        "coffee"
+      ],
+      "max_price_level": 2,
+      "radius_km": 50,
+      "terms": [],
+      "topics": []
+    },
+    "status": "completed",
+    "tools": [
+      {
+        "status": "completed",
+        "tool": "save_favorite",
+        "write": true
+      }
+    ],
+    "turn": 5
+  }
+]

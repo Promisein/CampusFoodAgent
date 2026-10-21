@@ -1,0 +1,27 @@
+{
+  "experiment_id": "agent_delivery_v1",
+  "outputs": {
+    "case_results.json": {
+      "bytes": 21919,
+      "sha256": "58ac833fccb351c6592995a1b21626aa1ad4d53065928a4cc4a0c58584cf49e7"
+    },
+    "live_agent_smoke.json": {
+      "bytes": 1888,
+      "sha256": "6802a2734312e3416fdc1f554d9b1eefd307467ae6ae8bad038a1dfa339cb3b2"
+    },
+    "metrics.json": {
+      "bytes": 341,
+      "sha256": "26c38142a428b687093ab3dc1207e596252176421bab07245bb257bbbfc3b241"
+    },
+    "offline_manifest.json": {
+      "bytes": 5473,
+      "sha256": "25495b51577382796736d5913ea645db259af38400406acc785cecb27ec9d34a"
+    },
+    "verification.json": {
+      "bytes": 952,
+      "sha256": "4e0363b0915033e296b312627391fdfbf13ce0f29c2cdce493298758de81d1fc"
+    }
+  },
+  "scope": "local bounded agent",
+  "ui_sha256": "ae0f38f678d4984ba891ce33bd16e02fcfdc5340ffbc26ec56874d93f6484165"
+}

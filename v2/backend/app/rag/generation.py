@@ -46,13 +46,14 @@ class ProviderFailure(ValueError):
 
 
 class DeepSeekProvider:
-    def __init__(self,settings,*,transport=None):
+    def __init__(self,settings,*,transport=None,system_prompt=SYSTEM_PROMPT):
         self.settings=settings
         self.transport=transport
+        self.system_prompt=system_prompt
 
     def complete(self,context):
         settings=self.settings
-        payload={'model':settings.model,'messages':[{'role':'system','content':SYSTEM_PROMPT},
+        payload={'model':settings.model,'messages':[{'role':'system','content':self.system_prompt},
                  {'role':'user','content':json.dumps({'untrusted_context':context},ensure_ascii=False)}],
                  'response_format':{'type':'json_object'},'thinking':{'type':'disabled'},
                  'temperature':0,'max_tokens':settings.max_tokens,'stream':False}

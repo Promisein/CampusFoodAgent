@@ -1,0 +1,74 @@
+{
+  "max_provider_attempts": 2,
+  "results": [
+    {
+      "action": "search",
+      "answer_mode": null,
+      "answer_usage": null,
+      "budget": {
+        "deadline_semantics": "cooperative; completed side effects are not cancelled",
+        "max_provider_calls": 1,
+        "max_steps": 4,
+        "provider_calls": 1,
+        "remaining_seconds": 8.812
+      },
+      "planner": {
+        "mode": "deepseek_action",
+        "provider_attempted": true,
+        "reason": null,
+        "usage": {
+          "completion_tokens": 9,
+          "prompt_tokens": 173,
+          "total_tokens": 182
+        }
+      },
+      "status": "completed",
+      "tools": [
+        {
+          "status": "completed",
+          "tool": "plan_action"
+        },
+        {
+          "status": "completed",
+          "tool": "search_restaurants"
+        }
+      ],
+      "turn": 1
+    },
+    {
+      "action": "explain",
+      "answer_mode": "deepseek_plan",
+      "answer_usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 578,
+        "total_tokens": 631
+      },
+      "budget": {
+        "deadline_semantics": "cooperative; completed side effects are not cancelled",
+        "max_provider_calls": 1,
+        "max_steps": 4,
+        "provider_calls": 1,
+        "remaining_seconds": 9.172
+      },
+      "planner": {
+        "mode": "rules",
+        "provider_attempted": false,
+        "reason": "model_budget_reserved_for_explanation",
+        "usage": {}
+      },
+      "status": "completed",
+      "tools": [
+        {
+          "status": "completed",
+          "tool": "retrieve_evidence"
+        },
+        {
+          "status": "completed",
+          "tool": "explain_restaurant"
+        }
+      ],
+      "turn": 2
+    }
+  ],
+  "scope": "bounded two-turn live smoke, not semantic quality evaluation"
+}

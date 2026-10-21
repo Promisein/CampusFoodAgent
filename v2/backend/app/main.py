@@ -15,7 +15,7 @@ from app.rag.settings import load_settings,RagSettings
 from app.rag.generation import AnswerService
 from app.evidence import link_answer_evidence
 
-app = FastAPI(title="CampusFoodAgent Yelp v2 API", version="0.5.0")
+app = FastAPI(title="CampusFoodAgent Yelp v2 API", version="0.6.0")
 dataset_repository = ProcessedDatasetRepository(
     Path(__file__).resolve().parents[1] / "data" / "processed"
 )
@@ -75,7 +75,9 @@ def attach_answer(request,response):
 
 @app.get('/api/v2/system/status')
 def system_status():
-    result={'version':'0.5.0','scope':'local_offline_demo','rag':rag_status()}
+    result={'version':'0.6.0','scope':'local_offline_demo','rag':rag_status(),
+            'agent':{'version':'agent_v1','max_turns':30,'ttl_seconds':86400,'max_steps':4,
+                     'max_provider_calls_per_turn':1,'planning_default':'rules','production_auth':False}}
     for key,repository in [('history',serving_repository),('search',search_repository),('ranker',ranking_repository)]:
         try:
             if repository is None:raise ValueError('Unavailable dependency')
@@ -136,3 +138,35 @@ def recommend(request: RecommendationRequest):
         return response
     except (OSError, ValueError, KeyError, TypeError) as exc:
         raise HTTPException(status_code=503, detail="Recommendation data unavailable") from exc
+
+
+from app.agent.store import SessionRepository
+from app.agent.service import AgentService,PLAN_PROMPT
+from app.agent.routes import register_agent_routes
+from app.rag.generation import DeepSeekProvider
+
+_agent_repository=None
+_agent_lock=Lock()
+
+
+def get_agent_repository():
+    global _agent_repository
+    with _agent_lock:
+        if _agent_repository is None:
+            _agent_repository=SessionRepository(Path(__file__).resolve().parents[1]/'data/derived/agent_v1/sessions.sqlite3')
+        return _agent_repository
+
+
+def get_agent_settings():return load_settings()
+
+
+def get_agent_planner_provider(settings):return DeepSeekProvider(settings,system_prompt=PLAN_PROMPT)
+
+
+def get_agent_service():
+    return AgentService(recommend=recommend,events=get_event_repository,
+        reviews=dataset_repository.load_representative_reviews_by_business,
+        settings=get_agent_settings,planner_provider=get_agent_planner_provider)
+
+
+register_agent_routes(app,lambda:get_agent_repository(),lambda:get_agent_service())

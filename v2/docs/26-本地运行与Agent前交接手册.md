@@ -2,6 +2,8 @@
 
 本手册对应2026年10月20日的本地离线推荐演示。质量结果见[25最终验收](25-Agent编排前最终质量验收.md)，数据与历史排序结论沿用20–23文档。
 
+2026年10月21日，多轮Agent已完成，新的交互入口为`/agent`。本手册保留Agent前操作记录；当前会话API、工具与验收见[27多轮Agent实现](27-多轮Agent实现与最终验收.md)。
+
 ## 启动
 
 在`C:\Users\Jianing\Desktop\CampusFoodAgent\v2\backend`执行：

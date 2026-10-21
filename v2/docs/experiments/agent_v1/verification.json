@@ -1,0 +1,37 @@
+{
+  "browser": {
+    "cards": 5,
+    "console_errors": 0,
+    "default_model_flags": false,
+    "restore_version": 6,
+    "restored_messages": 12,
+    "turns": 6
+  },
+  "independent_review": {
+    "agent_tests_passed": 23,
+    "fixes": [
+      "strict cancellation grammar",
+      "invalidate stale refs after planner clarification and budget failure",
+      "cancel English residual topic tokens"
+    ],
+    "remaining_important_findings": 0
+  },
+  "live_agent": {
+    "attempts": 2,
+    "max_calls_per_turn": 1,
+    "success": 2,
+    "tokens": 813
+  },
+  "offline_reproducible": true,
+  "pip_check": "passed",
+  "real_catalog": {
+    "completed": 8,
+    "expected_clarifications": 2,
+    "favorite_retry": "cached exact reply",
+    "provider_calls": 0,
+    "turns": 10
+  },
+  "scope": "local demo functional acceptance, not production auth/SLA or human dialogue quality",
+  "tests_passed": 255,
+  "warnings": 1
+}
