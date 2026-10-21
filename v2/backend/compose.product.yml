@@ -1,0 +1,16 @@
+services:
+  campusfood:
+    build:
+      context: .
+      dockerfile: Dockerfile.product
+    env_file: .env
+    environment:
+      CAMPUSFOOD_MODE: product
+      # This Compose file binds localhost over HTTP for local preview only.
+      CAMPUSFOOD_COOKIE_SECURE: "false"
+    ports:
+      - "127.0.0.1:8100:8100"
+    volumes:
+      - ./data/processed:/srv/campusfood/data/processed:ro
+      - ./data/derived:/srv/campusfood/data/derived
+    restart: unless-stopped

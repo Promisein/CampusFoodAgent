@@ -1,8 +1,10 @@
 from pathlib import Path
+import os
 import sqlite3
 from threading import Lock
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse,RedirectResponse
 
 from app.data_repository import ProcessedDatasetRepository
 from app.models import DatasetStatusResponse, HealthResponse, RecommendationRequest, RecommendationResponse
@@ -15,7 +17,7 @@ from app.rag.settings import load_settings,RagSettings
 from app.rag.generation import AnswerService
 from app.evidence import link_answer_evidence
 
-app = FastAPI(title="CampusFoodAgent Yelp v2 API", version="0.7.0")
+app = FastAPI(title="CampusFoodAgent Yelp v2 API", version="0.8.0")
 dataset_repository = ProcessedDatasetRepository(
     Path(__file__).resolve().parents[1] / "data" / "processed"
 )
@@ -75,9 +77,10 @@ def attach_answer(request,response):
 
 @app.get('/api/v2/system/status')
 def system_status():
-    result={'version':'0.7.0','scope':'local_offline_demo','rag':rag_status(),
+    product_mode=os.environ.get('CAMPUSFOOD_MODE','local')=='product'
+    result={'version':'0.8.0','scope':'single_host_product_preview' if product_mode else 'local_offline_demo','rag':rag_status(),
             'agent':{'version':'agent_semantic_v2','max_turns':30,'ttl_seconds':86400,'max_steps':4,
-                     'max_provider_calls_per_turn':1,'planning_default':'rules','production_auth':False}}
+                     'max_provider_calls_per_turn':1,'planning_default':'rules','production_auth':product_mode}}
     for key,repository in [('history',serving_repository),('search',search_repository),('ranker',ranking_repository)]:
         try:
             if repository is None:raise ValueError('Unavailable dependency')
@@ -170,3 +173,43 @@ def get_agent_service():
 
 
 register_agent_routes(app,lambda:get_agent_repository(),lambda:get_agent_service())
+
+from app.product.accounts import AccountStore
+from app.product.routes import register_product_routes
+
+_product_accounts=None
+_product_lock=Lock()
+
+
+def get_product_account_store():
+    global _product_accounts
+    with _product_lock:
+        if _product_accounts is None:
+            _product_accounts=AccountStore(Path(__file__).resolve().parents[1]/'data/derived/product_v1/accounts.sqlite3')
+        return _product_accounts
+
+
+def product_cookie_secure():
+    configured=os.environ.get('CAMPUSFOOD_COOKIE_SECURE')
+    return configured.lower() in ('1','true','yes') if configured is not None else os.environ.get('CAMPUSFOOD_MODE')=='product'
+
+
+register_product_routes(app,lambda:get_product_account_store(),lambda:get_agent_repository(),
+                        lambda:get_agent_service(),lambda:get_event_repository(),secure_cookie=product_cookie_secure)
+
+
+@app.middleware('http')
+async def product_mode_gate(request,call_next):
+    path=request.url.path
+    if os.environ.get('CAMPUSFOOD_MODE','local')=='product':
+        if path=='/':return RedirectResponse('/app',status_code=307)
+        blocked=(path in ('/demo','/agent','/docs','/redoc','/openapi.json') or
+                 path.startswith(('/api/v2/agent/','/api/v2/events','/api/v2/users/')) or
+                 (path=='/api/v2/recommend' and request.method=='POST'))
+        if blocked:return JSONResponse({'detail':'not_found'},status_code=404)
+    response=await call_next(request)
+    if path=='/app' or path.startswith(('/app/','/api/v2/product/')):
+        response.headers['X-Content-Type-Options']='nosniff'
+        response.headers['Referrer-Policy']='same-origin'
+        response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'"
+    return response

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#12372d"><link rel="icon" href="data:,">
+  <title>CampusFoodAgent · 找到适合这一餐的地方</title>
+  <link rel="stylesheet" href="/app/product.css"><script src="/app/product.js" defer></script>
+</head><body>
+  <header class="topbar">
+    <a class="brand" href="/app"><span class="brand-mark" aria-hidden="true">C</span><span>Campus<span class="brand-accent">Food</span>Agent</span></a>
+    <span class="topbar-note">餐厅发现 · Tampa 试运行</span>
+    <div class="account-actions" id="account-actions" hidden><span id="account-name"></span><button type="button" class="text-button" id="logout">退出登录</button></div>
+  </header>
+  <main>
+    <section id="auth-view" class="auth-layout">
+      <div class="auth-story">
+        <span class="eyebrow">A MORE THOUGHTFUL WAY TO CHOOSE</span>
+        <h1>下一顿好好吃，<br><em>从一句话开始。</em></h1>
+        <p>告诉我你想吃什么、和谁一起、预算或环境偏好。我会结合附近餐厅与可追溯评论，帮你缩小选择。</p>
+        <div class="story-points"><span>01&nbsp; 理解用餐场景</span><span>02&nbsp; 查看有依据的推荐</span><span>03&nbsp; 收藏喜欢的地方</span></div>
+        <p class="fine-print">当前只提供 Yelp Tampa 历史数据。实时营业、预约和过敏安全请直接向餐厅确认。</p>
+      </div>
+      <div class="auth-card">
+        <div class="card-ornament" aria-hidden="true">✳</div><span class="eyebrow">WELCOME IN</span>
+        <h2 id="auth-heading">欢迎回来</h2><p id="auth-description" class="muted">登录后继续你的餐厅发现之旅。</p>
+        <form id="auth-form">
+          <label for="auth-handle">用户名</label><input id="auth-handle" name="handle" autocomplete="username" pattern="(?:[A-Za-z0-9_]|-){3,32}" minlength="3" maxlength="32" required placeholder="3–32位英文、数字、下划线或短横线">
+          <label for="auth-password">密码</label><input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="12" maxlength="128" required placeholder="至少12位">
+          <p class="field-help">你的密码不会显示在对话中。</p><button type="submit" class="button button-primary full" id="auth-submit">登录</button>
+        </form>
+        <p class="auth-switch"><span id="auth-switch-caption">还没有账号？</span> <button type="button" id="auth-switch" class="text-button">创建账号</button></p>
+        <p id="auth-error" class="form-error" role="alert" aria-live="assertive"></p>
+      </div>
+    </section>
+    <section id="workspace" hidden>
+      <div class="workspace-heading"><div><span class="eyebrow">YOUR DINING COMPANION</span><h1>今天想吃点什么？</h1><p>说出心情和条件，我们一起找适合这一餐的地方。</p></div><span class="data-badge">● &nbsp;Tampa 历史餐厅数据</span></div>
+      <div class="workspace-grid">
+        <aside class="sidebar"><div class="sidebar-title"><span>我的空间</span><button type="button" id="new-session-shortcut" class="small-plus" aria-label="新建对话">＋</button></div>
+          <nav class="side-nav" aria-label="我的空间"><button type="button" class="nav-item active" data-section="discover">✦ &nbsp;发现餐厅</button><button type="button" class="nav-item" data-section="favorites">♡ &nbsp;我的收藏</button><button type="button" class="nav-item" data-section="conversations">◷ &nbsp;最近对话</button></nav>
+          <div class="sidebar-note"><strong>贴心提醒</strong><p>推荐依据 Yelp 历史数据和评论。场景偏好供参考，实际情况请再次核对。</p></div>
+        </aside>
+        <div class="main-column">
+          <div id="global-error" class="error-banner" role="alert" hidden></div><div id="global-notice" class="notice-banner" role="status" aria-live="polite" hidden></div>
+          <section id="discover-section" class="section-view">
+            <div class="setup-card" id="setup-card"><div class="section-heading"><div><span class="eyebrow">START HERE</span><h2>开启一场新的发现</h2></div><span class="step-label">设置位置</span></div>
+              <p class="muted">目前收录 Tampa 餐厅。可以调整中心位置和搜索范围；坐标仅用于本次推荐。</p>
+              <form id="session-form"><div class="form-grid">
+                <label>城市<input id="city" value="Tampa" readonly aria-description="当前仅支持 Tampa"></label>
+                <label>纬度<input id="latitude" type="number" min="-90" max="90" step="any" value="27.9506" required></label>
+                <label>经度<input id="longitude" type="number" min="-180" max="180" step="any" value="-82.4572" required></label>
+                <label>范围（公里）<input id="radius" type="number" min="0.1" max="50" step="any" value="5" required></label>
+                <label>最高价格档<select id="price"><option value="1">1 · 较低</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4 · 较高</option></select></label>
+              </div><button type="submit" class="button button-primary" id="create-session">开始推荐 ↗</button></form>
+            </div>
+            <div id="conversation-panel" hidden>
+              <div class="conversation-heading"><div><span class="eyebrow">CONVERSATION</span><h2>让我们一起挑选</h2></div><button type="button" id="new-session" class="button button-outline">＋ 新对话</button></div>
+              <div id="active-conditions" class="condition-row" aria-label="当前条件"></div><div id="messages" class="messages" aria-live="polite"></div>
+              <form id="turn-form" class="composer"><label for="message">补充你的想法</label><textarea id="message" maxlength="1000" rows="3" required placeholder="例如：找一家适合约会、安静一些的餐厅"></textarea>
+                <div class="composer-footer"><div class="model-options"><label><input type="checkbox" id="use-model" checked> 用 DeepSeek 理解表达 <span>（使用 API 额度）</span></label><label><input type="checkbox" id="generate-answer"> 解释时用 AI 选择引用</label></div><button type="submit" class="button button-primary" id="send">发送 ↗</button></div>
+                <button type="button" class="text-button abandon" id="abandon-retry" hidden>放弃重试并同步会话</button>
+              </form>
+              <div class="result-header"><div><span class="eyebrow">SELECTED FOR YOU</span><h2>本次推荐</h2></div><span id="result-count" class="result-count"></span></div><div id="results" class="results"></div>
+            </div>
+          </section>
+          <section id="favorites-section" class="section-view" hidden><div class="section-heading"><div><span class="eyebrow">SAVED PLACES</span><h2>我的收藏</h2></div></div><p class="muted">收藏方便以后查看；新账号初期仍按冷启动与当前请求推荐。</p><div id="favorite-list" class="list-stack"></div></section>
+          <section id="conversations-section" class="section-view" hidden><div class="section-heading"><div><span class="eyebrow">PICK UP WHERE YOU LEFT OFF</span><h2>最近对话</h2></div></div><div id="conversation-list" class="list-stack"></div></section>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>CampusFoodAgent · 基于 Yelp 历史数据的本地产品试运行 · 餐厅信息请核实</footer>
+</body></html>
